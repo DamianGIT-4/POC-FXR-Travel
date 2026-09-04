@@ -1008,6 +1008,11 @@
     if(toCurrency !== m.defaultCurrency) out += ' ' + CUR_LABEL[toCurrency];
     return out;
   }
+  // always carries the ISO code: used where copy names the settlement currency
+  function priceStrExplicit(amountLocal, market, cur){
+    var m = MARKETS[market];
+    return CUR_SYMBOL[cur] + fmt.format(convert(amountLocal, m.localCurrency, cur)) + ' ' + CUR_LABEL[cur];
+  }
   function durStr(mins){ return Math.floor(mins/60) + 'h ' + (mins%60 < 10 ? '0' : '') + (mins%60) + 'm'; }
   function totalMins(f){ return f.mins + (f.ret ? f.ret.mins : 0); }
 
@@ -1268,7 +1273,7 @@
     if(state.currency !== charge){
       // the displayed amount is not what gets settled — say so plainly
       copyEl.innerHTML = 'El importe en <b>' + state.currency + '</b> es solo de referencia: el cobro se procesa en <b>' +
-        priceStr(total, state.market, charge) + '</b> y tu banco define el tipo de cambio final.';
+        priceStrExplicit(total, state.market, charge) + '</b> y tu banco define el tipo de cambio final.';
     } else if(charge === m.localCurrency){
       copyEl.innerHTML = 'Se te cobrará en <b>' + charge + '</b>. Si tu tarjeta fue emitida fuera de ' + m.country +
         ', tu banco puede aplicar su propia conversión.';
