@@ -112,7 +112,7 @@
   .proto-bar{
     background:var(--panel);color:var(--panel-ink);
     display:flex;flex-wrap:wrap;align-items:center;gap:12px;
-    padding:7px 18px;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    padding:6px 18px;font-family:'IBM Plex Mono',monospace;font-size:11px;
   }
   .proto-tag{
     color:var(--panel-accent);letter-spacing:.08em;text-transform:uppercase;font-weight:600;
@@ -135,10 +135,23 @@
   .proto-btn:hover{color:var(--panel-ink);border-color:var(--panel-ink-2);}
   .proto-btn[aria-pressed="true"]{background:var(--panel-accent);border-color:var(--panel-accent);color:var(--panel);}
 
+  /* ============ app shell ============
+     A container (not the viewport) drives the responsive breakpoints, so the
+     phone-frame toggle below triggers the real mobile layout on a desktop. */
+  .shell{container-type:inline-size;}
+  .shell.phone{
+    max-width:402px;margin:20px auto 32px;
+    height:min(760px,76vh);overflow-y:auto;overscroll-behavior:contain;
+    border:1px solid var(--line);border-radius:22px;
+    box-shadow:var(--shadow);background:var(--surface);
+  }
+  body.phone-mode{background:var(--paper);}
+  body.phone-mode .drawer-fab{right:max(18px, calc(50% - 196px));}
+
   /* ============ product nav ============ */
   .nav{
     background:var(--surface);border-bottom:1px solid var(--line);
-    display:flex;align-items:center;flex-wrap:wrap;gap:16px;row-gap:9px;padding:12px 18px;
+    display:flex;align-items:center;flex-wrap:wrap;gap:16px;row-gap:9px;padding:10px 18px;
   }
   .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:-.02em;}
   .brand-mark{
@@ -151,7 +164,7 @@
     background:none;border:0;color:var(--ink-2);font-size:13.5px;cursor:pointer;padding:6px 4px;
     display:none;
   }
-  @media (min-width:900px){.nav-link{display:block;}}
+  @container (min-width:900px){.nav-link{display:block;}}
   .nav-link:hover{color:var(--ink);}
 
   .wallet-trigger{
@@ -175,7 +188,7 @@
   /* ============ search summary ============ */
   .searchbar{
     background:var(--surface);border-bottom:1px solid var(--line);
-    padding:14px 18px;
+    padding:11px 18px;
   }
   .searchbar-inner{
     max-width:1180px;margin:0 auto;
@@ -183,7 +196,7 @@
   }
   .search-field{
     display:flex;align-items:center;gap:10px;background:var(--surface-2);
-    border:1px solid var(--line);border-radius:10px;padding:9px 13px;
+    border:1px solid var(--line);border-radius:10px;padding:8px 12px;
   }
   .search-field .sf-label{font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;}
   .search-field .sf-value{font-size:13.5px;font-weight:600;}
@@ -195,17 +208,17 @@
   .btn-edit:hover{border-color:var(--brand);}
 
   /* ============ page shell ============ */
-  .page{max-width:1180px;margin:0 auto;padding:20px 18px 90px;}
+  .page{max-width:1180px;margin:0 auto;padding:14px 18px 90px;}
 
   /* ============ sort tabs ============ */
   .sort-tabs{
     display:grid;grid-template-columns:repeat(3,1fr);gap:0;
     background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;
-    margin-bottom:16px;box-shadow:var(--shadow-sm);
+    margin-bottom:12px;box-shadow:var(--shadow-sm);
   }
   .sort-tab{
     background:var(--surface);border:0;border-right:1px solid var(--line);
-    padding:12px 14px;cursor:pointer;text-align:left;
+    padding:10px 13px;cursor:pointer;text-align:left;
     display:flex;flex-direction:column;gap:2px;
   }
   .sort-tab:last-child{border-right:0;}
@@ -216,12 +229,11 @@
 
   /* ============ demo hint ============ */
   .hint{
-    background:var(--brand-tint);border:1px solid var(--brand);border-radius:12px;
-    padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start;
+    background:var(--brand-tint);border:1px solid var(--brand);border-radius:10px;
+    padding:9px 12px;margin-bottom:12px;display:flex;gap:10px;align-items:center;
   }
-  .hint-body{flex:1;min-width:0;}
-  .hint h2{font-size:13.5px;font-weight:700;color:var(--brand);margin-bottom:7px;}
-  .hint ol{margin:0;padding-left:19px;font-size:12.5px;line-height:1.65;color:var(--ink);}
+  .hint-body{flex:1;min-width:0;font-size:12.5px;line-height:1.5;color:var(--ink);}
+  .hint-body strong{color:var(--brand);font-weight:700;}
   .hint b{color:var(--brand);}
   .hint-close{
     background:none;border:0;color:var(--brand);cursor:pointer;font-size:15px;line-height:1;
@@ -237,16 +249,18 @@
     padding:11px 14px;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:var(--shadow-sm);
   }
   .filters-toggle:hover{border-color:var(--brand);}
-  @media (max-width:860px){
+  @container (max-width:860px){
     .layout{grid-template-columns:1fr;}
     .filters-bar{display:block;}
     .filter-card{display:none;}
     .layout[data-filters="open"] .filter-card{display:block;}
   }
-  @media (max-width:520px){
-    .sort-tab{padding:10px 11px;}
+  @container (max-width:520px){
+    .sort-tab{padding:9px 10px;}
     .sort-tab .st-name{font-size:12px;}
     .sort-tab .st-meta{font-size:10.5px;}
+  }
+  @media (max-width:520px){
     .drawer-fab{padding:9px 14px;font-size:11px;}
   }
 
@@ -268,7 +282,7 @@
   .price-range .pr-bounds{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-2);}
 
   /* ============ flight cards ============ */
-  .results-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+  .results-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
   .results-count{font-size:13px;color:var(--ink-2);}
   .results-count b{color:var(--ink);}
 
@@ -281,14 +295,14 @@
   .compare-trigger .approx{font-size:14px;font-weight:700;color:var(--brand);}
   .compare-trigger.active{border-style:solid;border-color:var(--brand);color:var(--brand);background:var(--brand-tint);}
 
-  .flight-list{display:flex;flex-direction:column;gap:12px;}
+  .flight-list{display:flex;flex-direction:column;gap:10px;}
   .flight-card{
     background:var(--surface);border:1px solid var(--line);border-radius:14px;
     box-shadow:var(--shadow-sm);overflow:hidden;
     transition:box-shadow .15s ease, border-color .15s ease;
   }
   .flight-card:hover{border-color:var(--brand);box-shadow:var(--shadow);}
-  .badge-strip{display:flex;gap:6px;padding:9px 16px 0;flex-wrap:wrap;}
+  .badge-strip{display:flex;gap:6px;flex-wrap:wrap;}
   .badge{
     font-size:10.5px;font-weight:700;letter-spacing:.02em;border-radius:5px;padding:3px 7px;
     text-transform:uppercase;
@@ -297,11 +311,11 @@
   .badge.fast{background:var(--brand-tint);color:var(--brand);}
   .badge.seats{background:var(--warn-tint);color:var(--warn);}
 
-  .fc-body{display:grid;grid-template-columns:1fr 230px;gap:18px;padding:14px 16px 16px;align-items:center;}
-  @media (max-width:640px){.fc-body{grid-template-columns:1fr;}}
+  .fc-body{display:grid;grid-template-columns:1fr 230px;gap:18px;padding:12px 16px 13px;align-items:center;}
+  @container (max-width:640px){.fc-body{grid-template-columns:1fr;}}
 
-  .fc-left{display:flex;flex-direction:column;gap:11px;min-width:0;}
-  .fc-airline{display:flex;align-items:center;gap:9px;}
+  .fc-left{display:flex;flex-direction:column;gap:9px;min-width:0;}
+  .fc-airline{display:flex;align-items:center;flex-wrap:wrap;gap:9px;}
   .airline-mark{
     width:30px;height:30px;border-radius:9px;flex:none;color:#fff;
     display:flex;align-items:center;justify-content:center;
@@ -310,7 +324,7 @@
   .fc-airline-name{font-size:13px;font-weight:600;}
   .fc-airline-sub{font-size:11.5px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace;}
 
-  .legs{display:flex;flex-direction:column;gap:10px;}
+  .legs{display:flex;flex-direction:column;gap:7px;}
   .leg-row{display:flex;align-items:center;gap:13px;}
   .leg-label{
     flex:none;width:52px;font-size:9.5px;font-weight:700;letter-spacing:.06em;
@@ -319,7 +333,7 @@
   .leg-label .leg-date{display:block;font-weight:500;letter-spacing:0;font-size:10px;}
   .fc-times{display:flex;align-items:center;gap:14px;flex:1;min-width:0;}
   .fc-time{display:flex;flex-direction:column;}
-  .fc-time .t{font-size:19px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:-.02em;line-height:1.15;}
+  .fc-time .t{font-size:17px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:-.02em;line-height:1.15;}
   .fc-time .t sup{font-size:10px;color:var(--warn);font-weight:600;margin-left:1px;}
   .fc-time .a{font-size:11.5px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace;}
   .fc-leg{flex:1;min-width:70px;display:flex;flex-direction:column;align-items:center;gap:4px;}
@@ -337,7 +351,7 @@
   .fc-leg .stops.direct{color:var(--good);}
   .fc-leg .stops.via{color:var(--warn);}
 
-  .fc-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);}
+  .fc-meta{display:flex;align-items:center;gap:13px;flex-wrap:wrap;font-size:11px;color:var(--ink-2);}
   .fc-meta .item{display:flex;align-items:center;gap:5px;}
   .fc-meta svg{width:14px;height:14px;flex:none;color:var(--ink-3);}
   .fc-meta .item.on svg{color:var(--good);}
@@ -347,11 +361,11 @@
     display:flex;flex-direction:column;align-items:flex-end;gap:7px;text-align:right;
     border-left:1px solid var(--line-2);padding-left:18px;
   }
-  @media (max-width:640px){
-    .fc-right{align-items:flex-start;text-align:left;border-left:0;padding-left:0;border-top:1px solid var(--line-2);padding-top:14px;}
+  @container (max-width:640px){
+    .fc-right{align-items:flex-start;text-align:left;border-left:0;padding-left:0;border-top:1px solid var(--line-2);padding-top:13px;}
   }
   .fare-tier{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);}
-  .price{font-size:25px;font-weight:700;letter-spacing:-.025em;font-family:'IBM Plex Mono',monospace;line-height:1.1;}
+  .price{font-size:23px;font-weight:700;letter-spacing:-.025em;font-family:'IBM Plex Mono',monospace;line-height:1.1;}
   .price-estimate{font-size:12px;color:var(--ink-2);font-family:'IBM Plex Mono',monospace;}
   .price-sub{font-size:11.5px;color:var(--ink-3);}
   .btn-primary{
@@ -395,7 +409,7 @@
   }
   .btn-back:hover{color:var(--ink);}
   .fare-grid{display:grid;grid-template-columns:1fr 350px;gap:20px;align-items:start;}
-  @media (max-width:860px){.fare-grid{grid-template-columns:1fr;}}
+  @container (max-width:860px){.fare-grid{grid-template-columns:1fr;}}
 
   .panel{
     background:var(--surface);border:1px solid var(--line);border-radius:14px;
@@ -576,8 +590,11 @@
     <button class="market-tab" id="tab-ar" role="tab" aria-selected="false">AR · .com.ar</button>
   </div>
   <div class="proto-spacer"></div>
+  <button class="proto-btn" id="device-toggle" aria-pressed="false">Vista móvil</button>
   <button class="proto-btn" id="notes-toggle" aria-pressed="false">Notas de producto</button>
 </div>
+
+<div class="shell" id="shell">
 
 <!-- ============ product nav ============ -->
 <nav class="nav">
@@ -634,12 +651,9 @@
 
     <div class="hint" id="hint">
       <div class="hint-body">
-        <h2>Qué probar en este prototipo</h2>
-        <ol>
-          <li>Abrí el <b>wallet</b> (arriba a la derecha) y elegí USD — todos los precios se recalculan.</li>
-          <li>Usá <b>≈ Comparar</b> para agregar una moneda de referencia sin cambiar el precio real.</li>
-          <li>Abrí el <b>Panel de datos</b> (abajo a la derecha) para ver qué se registraría.</li>
-        </ol>
+        <strong>Qué probar:</strong>
+        elegí <b>USD</b> en el wallet de arriba · agregá una referencia con <b>≈ Comparar</b> ·
+        mirá qué se registra en <b>Panel de datos</b>
       </div>
       <button class="hint-close" id="hint-close" aria-label="Ocultar">✕</button>
     </div>
@@ -771,6 +785,8 @@
   </section>
 </div>
 
+</div><!-- /shell -->
+
 <!-- ============ overlays ============ -->
 <div class="popover" id="popover" hidden></div>
 
@@ -893,7 +909,7 @@
     filters:{ nonstopOnly:false, airlines:{}, maxPricePct:100 },
     events:[], overrideHistory:{mx:null, ar:null},
     popoverTouchpoint:null, intentTimer:null, pendingIntent:null,
-    showNotes:false, filtersOpen:false, hintDismissed:false
+    showNotes:false, filtersOpen:false, hintDismissed:false, phoneMode:false
   };
 
   /* ---------- persistence ---------- */
@@ -1113,12 +1129,12 @@
         : '';
 
       card.innerHTML =
-        (badges ? '<div class="badge-strip">' + badges + '</div>' : '') +
         '<div class="fc-body">' +
           '<div class="fc-left">' +
             '<div class="fc-airline">' +
               '<span class="airline-mark" style="background:' + (AIRLINE_COLOR[f.airline] || '#555') + '">' + f.code + '</span>' +
               '<span><span class="fc-airline-name">' + f.airline + '</span><br><span class="fc-airline-sub">' + f.code + ' ' + f.num + ' · ' + f.code + ' ' + (f.ret ? f.ret.num : '') + '</span></span>' +
+              (badges ? '<span class="badge-strip">' + badges + '</span>' : '') +
             '</div>' +
             itinerary(f) +
             '<div class="fc-meta">' +
@@ -1454,6 +1470,16 @@
 
   document.getElementById('notes-toggle').addEventListener('click', function(){
     state.showNotes = !state.showNotes;
+    renderChrome();
+  });
+  document.getElementById('device-toggle').addEventListener('click', function(){
+    state.phoneMode = !state.phoneMode;
+    document.getElementById('shell').classList.toggle('phone', state.phoneMode);
+    document.body.classList.toggle('phone-mode', state.phoneMode);
+    this.setAttribute('aria-pressed', state.phoneMode);
+    this.textContent = state.phoneMode ? 'Vista escritorio' : 'Vista móvil';
+    closePopover();
+    if(state.phoneMode) state.filtersOpen = false;
     renderChrome();
   });
   document.getElementById('hint-close').addEventListener('click', function(){
