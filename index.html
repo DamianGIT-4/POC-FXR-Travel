@@ -43,6 +43,7 @@
     --panel-ink:#E8EBEF;
     --panel-ink-2:#98A2B0;
     --panel-accent:#4FD1C5;
+    --bezel:#15181D;
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -140,13 +141,40 @@
      phone-frame toggle below triggers the real mobile layout on a desktop. */
   .shell{container-type:inline-size;}
   .shell.phone{
-    max-width:402px;margin:20px auto 32px;
-    height:min(760px,76vh);overflow-y:auto;overscroll-behavior:contain;
-    border:1px solid var(--line);border-radius:22px;
-    box-shadow:var(--shadow);background:var(--surface);
+    width:440px;max-width:100%;margin:22px auto 10px;
+    height:min(880px,80vh);overflow-y:auto;overscroll-behavior:contain;
+    background:var(--surface);
+    border:10px solid var(--bezel);border-radius:54px;
+    box-shadow:0 0 0 1px rgba(255,255,255,.07), 0 24px 60px rgba(0,0,0,.3);
   }
   body.phone-mode{background:var(--paper);}
-  body.phone-mode .drawer-fab{right:max(18px, calc(50% - 196px));}
+  body.phone-mode .drawer-fab{right:max(18px, calc(50% - 214px));}
+
+  /* iOS status bar + Dynamic Island, so the frame reads as a device */
+  .status-bar{display:none;}
+  .shell.phone .status-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:6;height:48px;padding:0 28px;
+    background:var(--surface);font-size:14.5px;font-weight:600;letter-spacing:-.01em;
+  }
+  .island{
+    position:absolute;left:50%;transform:translateX(-50%);top:8px;
+    width:118px;height:32px;border-radius:20px;background:var(--bezel);
+  }
+  .sb-icons{display:flex;align-items:center;gap:6px;color:var(--ink);}
+  .home-indicator{display:none;}
+  .shell.phone .home-indicator{
+    display:block;position:sticky;bottom:0;z-index:6;
+    background:var(--surface);padding:9px 0 10px;
+  }
+  .shell.phone .home-indicator::after{
+    content:"";display:block;width:150px;height:5px;border-radius:3px;
+    background:var(--ink);opacity:.5;margin:0 auto;
+  }
+  .device-caption{
+    text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--ink-3);margin:0 0 30px;letter-spacing:.02em;
+  }
 
   /* ============ product nav ============ */
   .nav{
@@ -362,9 +390,21 @@
     border-left:1px solid var(--line-2);padding-left:18px;
   }
   @container (max-width:640px){
-    .fc-right{align-items:flex-start;text-align:left;border-left:0;padding-left:0;border-top:1px solid var(--line-2);padding-top:13px;}
+    /* the stacked column was 129px of a 344px card — make it a single row */
+    .fc-right{
+      flex-direction:row;align-items:center;justify-content:space-between;gap:12px;
+      text-align:left;border-left:0;padding-left:0;
+      border-top:1px solid var(--line-2);padding-top:11px;
+    }
+    .price-block{align-items:flex-start;}
+    .fc-right .fare-tier{display:none;}   /* moves into the flight-number line */
+    .tier-inline{display:inline;}
+    .price-sub{display:none;}             /* already stated in the list header */
+    .fc-right .btn-primary{flex:none;}
   }
   .fare-tier{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);}
+  .price-block{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0;}
+  .tier-inline{display:none;}
   .price{font-size:23px;font-weight:700;letter-spacing:-.025em;font-family:'IBM Plex Mono',monospace;line-height:1.1;}
   .price-estimate{font-size:12px;color:var(--ink-2);font-family:'IBM Plex Mono',monospace;}
   .price-sub{font-size:11.5px;color:var(--ink-3);}
@@ -596,6 +636,17 @@
 
 <div class="shell" id="shell">
 
+<!-- simulated device chrome — only rendered inside the phone frame -->
+<div class="status-bar" aria-hidden="true">
+  <span class="sb-time">9:41</span>
+  <span class="island"></span>
+  <span class="sb-icons">
+    <svg viewBox="0 0 18 12" width="17" height="12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0.5" width="3" height="11.5" rx="1"/></svg>
+    <svg viewBox="0 0 16 12" width="16" height="12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M1 4.2a10 10 0 0 1 14 0"/><path d="M3.6 7a6.4 6.4 0 0 1 8.8 0"/><circle cx="8" cy="10.2" r="1.1" fill="currentColor" stroke="none"/></svg>
+    <svg viewBox="0 0 26 12" width="25" height="12" fill="none"><rect x="0.6" y="0.6" width="21" height="10.8" rx="3" stroke="currentColor" stroke-opacity=".45" stroke-width="1.2"/><rect x="2.2" y="2.2" width="15" height="7.6" rx="1.8" fill="currentColor"/><path d="M23.4 4.2v3.6a2.2 2.2 0 0 0 0-3.6Z" fill="currentColor" fill-opacity=".45"/></svg>
+  </span>
+</div>
+
 <!-- ============ product nav ============ -->
 <nav class="nav">
   <div class="brand">
@@ -785,7 +836,11 @@
   </section>
 </div>
 
+<div class="home-indicator" aria-hidden="true"></div>
+
 </div><!-- /shell -->
+
+<p class="device-caption" id="device-caption" hidden>iPhone 16 Pro Max · 440 × 956 pt</p>
 
 <!-- ============ overlays ============ -->
 <div class="popover" id="popover" hidden></div>
@@ -1133,7 +1188,8 @@
           '<div class="fc-left">' +
             '<div class="fc-airline">' +
               '<span class="airline-mark" style="background:' + (AIRLINE_COLOR[f.airline] || '#555') + '">' + f.code + '</span>' +
-              '<span><span class="fc-airline-name">' + f.airline + '</span><br><span class="fc-airline-sub">' + f.code + ' ' + f.num + ' · ' + f.code + ' ' + (f.ret ? f.ret.num : '') + '</span></span>' +
+              '<span><span class="fc-airline-name">' + f.airline + '</span><br><span class="fc-airline-sub">' + f.code + ' ' + f.num + ' · ' + f.code + ' ' + (f.ret ? f.ret.num : '') +
+                '<span class="tier-inline"> · ' + f.tier + '</span></span></span>' +
               (badges ? '<span class="badge-strip">' + badges + '</span>' : '') +
             '</div>' +
             itinerary(f) +
@@ -1145,9 +1201,11 @@
           '</div>' +
           '<div class="fc-right">' +
             '<span class="fare-tier">Tarifa ' + f.tier + '</span>' +
-            '<span class="price">' + priceStr(f.price, state.market, state.currency) + '</span>' +
-            estimate +
-            '<span class="price-sub">Total 2 pasajeros</span>' +
+            '<div class="price-block">' +
+              '<span class="price">' + priceStr(f.price, state.market, state.currency) + '</span>' +
+              estimate +
+              '<span class="price-sub">Total 2 pasajeros</span>' +
+            '</div>' +
             '<button class="btn-primary">Ver oferta</button>' +
           '</div>' +
         '</div>';
@@ -1478,8 +1536,12 @@
     document.body.classList.toggle('phone-mode', state.phoneMode);
     this.setAttribute('aria-pressed', state.phoneMode);
     this.textContent = state.phoneMode ? 'Vista escritorio' : 'Vista móvil';
+    document.getElementById('device-caption').hidden = !state.phoneMode;
     closePopover();
-    if(state.phoneMode) state.filtersOpen = false;
+    if(state.phoneMode){
+      state.filtersOpen = false;
+      document.getElementById('shell').scrollTop = 0;
+    }
     renderChrome();
   });
   document.getElementById('hint-close').addEventListener('click', function(){
