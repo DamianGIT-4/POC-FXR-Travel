@@ -914,7 +914,8 @@
   var KIND_LABEL = { switch:'cambio real', estimate:'estimado' };
   var REASON_LABEL = {
     compare:'Comparando precios', card:'Tarjeta de otro país', curious:'Solo curiosidad',
-    dismissed:'Cerró la encuesta', ignored:'No respondió', reverted:'Volvió a moneda local'
+    charge:'Quiere saber el cobro final',
+    dismissed:'Cerró la encuesta', ignored:'No respondió', reverted:'Volvió al default del sitio'
   };
 
   var AIRLINE_COLOR = {
@@ -927,7 +928,7 @@
   var MARKETS = {
     mx: {
       domain:'.com.mx', country:'México', nativeCurrency:'MXN',
-      availableCurrencies:['MXN','USD'],
+      defaultCurrency:'MXN', availableCurrencies:['MXN','USD'],
       route:'MEX → CUN', routeLong:'Ciudad de México → Cancún',
       serviceFee:189,
       flights:[
@@ -945,7 +946,7 @@
     },
     ar: {
       domain:'.com.ar', country:'Argentina', nativeCurrency:'ARS',
-      availableCurrencies:['ARS','USD'],
+      defaultCurrency:'USD', availableCurrencies:['USD','ARS'],
       route:'EZE → BRC', routeLong:'Buenos Aires → Bariloche',
       serviceFee:18500,
       flights:[
@@ -983,7 +984,7 @@
         var saved = JSON.parse(raw);
         if(saved && saved.market === state.market && CUR_LABEL[saved.currency]){
           state.currency = saved.currency;
-          state.autoCurrency = saved.currency === MARKETS[state.market].nativeCurrency;
+          state.autoCurrency = saved.currency === MARKETS[state.market].defaultCurrency;
         }
       }
     }catch(e){}
@@ -996,9 +997,10 @@
      symbol only while on the site's own currency (context removes ambiguity);
      symbol + ISO code the moment it isn't (exactly when ambiguity appears) */
   function priceStr(amountNative, market, toCurrency){
-    var native = MARKETS[market].nativeCurrency;
-    var out = CUR_SYMBOL[toCurrency] + fmt.format(convert(amountNative, native, toCurrency));
-    if(toCurrency !== native) out += ' ' + CUR_LABEL[toCurrency];
+    var m = MARKETS[market];
+    // fares are stored in the market's local currency; the site may quote another
+    var out = CUR_SYMBOL[toCurrency] + fmt.format(convert(amountNative, m.nativeCurrency, toCurrency));
+    if(toCurrency !== m.defaultCurrency) out += ' ' + CUR_LABEL[toCurrency];
     return out;
   }
   function durStr(mins){ return Math.floor(mins/60) + 'h ' + (mins%60 < 10 ? '0' : '') + (mins%60) + 'm'; }
@@ -1259,7 +1261,7 @@
     var native = m.nativeCurrency;
     document.getElementById('charge-copy-text').innerHTML = state.currency === native
       ? 'Se te cobrará en <b>' + native + '</b>. Si tu tarjeta fue emitida fuera de ' + m.country + ', tu banco puede aplicar su propia conversión.'
-      : 'Estás viendo los precios en <b>' + state.currency + '</b>, pero el cobro se procesa en <b>' + native + '</b> (' + priceStr(total, state.market, native) + '). Tu banco define el tipo de cambio final.';
+      : 'Ves los precios en <b>' + state.currency + '</b>, pero el cobro se procesa en tu moneda local: <b>' + priceStr(total, state.market, native) + '</b>. Tu banco define el tipo de cambio final.';
   }
 
   function render(){
@@ -1316,10 +1318,10 @@
     var oh = state.overrideHistory;
     if(oh.mx && oh.ar){
       cross.className = 'signal hit';
-      cross.innerHTML = '<b>Señal encontrada.</b> Esta sesión anuló la moneda local en ambos mercados (MX → ' + oh.mx + ', AR → ' + oh.ar + '): el mismo visitante eligiendo la misma moneda en más de un sitio.';
+      cross.innerHTML = '<b>Señal encontrada.</b> Esta sesión cambió la moneda por defecto en ambos mercados (MX → ' + oh.mx + ', AR → ' + oh.ar + '): el mismo visitante eligiendo la misma moneda en más de un sitio.';
     } else if(oh.mx || oh.ar){
       cross.className = 'signal';
-      cross.textContent = 'Anulado en ' + (oh.mx ? 'MX (' + oh.mx + ')' : 'AR (' + oh.ar + ')') + '. Cambia también la moneda en el otro mercado para disparar la señal cruzada.';
+      cross.textContent = 'Cambio manual en ' + (oh.mx ? 'MX (' + oh.mx + ')' : 'AR (' + oh.ar + ')') + '. Cambia también la moneda en el otro mercado para disparar la señal cruzada.';
     } else {
       cross.className = 'signal';
       cross.textContent = 'Sin anulaciones todavía en ningún mercado.';
@@ -1428,18 +1430,18 @@
   }
 
   function selectCurrency(touchpoint, currency){
-    var native = MARKETS[state.market].nativeCurrency;
+    var def = MARKETS[state.market].defaultCurrency;
     var prev = state.currency;
     closePopover();
     if(currency === prev) return;
 
     state.currency = currency;
-    state.autoCurrency = currency === native;
+    state.autoCurrency = currency === def;
     persist();
     render();
 
-    if(currency === native){
-      cancelPendingIntent(); // reverting is itself the answer — don't survey it
+    if(currency === def){
+      cancelPendingIntent(); // back to the site default — don't survey it
       logEvent(touchpoint, currency, 'reverted', 'switch');
     } else {
       state.overrideHistory[state.market] = currency;
@@ -1479,7 +1481,11 @@
     document.getElementById('intent-text').textContent = '¿Por qué quieres ver los precios en ' + currency + '?';
     var opts = document.getElementById('intent-options');
     opts.innerHTML = '';
-    [['compare','Estoy comparando precios'],['card','Mi tarjeta es de otro país'],['curious','Solo curiosidad']].forEach(function(p){
+    var toLocal = currency === MARKETS[state.market].nativeCurrency;
+    var choices = toLocal
+      ? [['compare','Estoy comparando precios'],['charge','Quiero saber cuánto me van a cobrar'],['curious','Solo curiosidad']]
+      : [['compare','Estoy comparando precios'],['card','Mi tarjeta es de otro país'],['curious','Solo curiosidad']];
+    choices.forEach(function(p){
       var b = document.createElement('button');
       b.className = 'intent-chip';
       b.textContent = p[1];
@@ -1520,16 +1526,16 @@
     openEstimate(this);
   });
 
-  function switchMarket(key, currency){
+  function switchMarket(key){
     if(state.market === key) return;
     cancelPendingIntent(); hideIntent();
-    state.market = key; state.currency = currency; state.autoCurrency = true;
+    state.market = key; state.currency = MARKETS[key].defaultCurrency; state.autoCurrency = true;
     state.estimateCurrency = null; state.screen = 'results'; state.selectedFlight = null;
     state.filters = { nonstopOnly:false, airlines:{}, maxPricePct:100 };
     loadPersisted(); closePopover(); render();
   }
-  document.getElementById('tab-mx').addEventListener('click', function(){ switchMarket('mx','MXN'); });
-  document.getElementById('tab-ar').addEventListener('click', function(){ switchMarket('ar','ARS'); });
+  document.getElementById('tab-mx').addEventListener('click', function(){ switchMarket('mx'); });
+  document.getElementById('tab-ar').addEventListener('click', function(){ switchMarket('ar'); });
 
   document.getElementById('notes-toggle').addEventListener('click', function(){
     state.showNotes = !state.showNotes;
