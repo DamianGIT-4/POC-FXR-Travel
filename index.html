@@ -927,8 +927,12 @@
 
   var MARKETS = {
     mx: {
-      domain:'.com.mx', country:'México', nativeCurrency:'MXN',
-      defaultCurrency:'MXN', availableCurrencies:['MXN','USD'],
+      domain:'.com.mx', country:'México',
+      // localCurrency: market's own currency (and the base the fares are stored in)
+      // defaultCurrency: what the site quotes on arrival
+      // chargeCurrency: what the customer's card is actually settled in
+      localCurrency:'MXN', defaultCurrency:'MXN', chargeCurrency:'MXN',
+      availableCurrencies:['MXN','USD'],
       route:'MEX → CUN', routeLong:'Ciudad de México → Cancún',
       serviceFee:189,
       flights:[
@@ -945,8 +949,9 @@
       ]
     },
     ar: {
-      domain:'.com.ar', country:'Argentina', nativeCurrency:'ARS',
-      defaultCurrency:'USD', availableCurrencies:['USD','ARS'],
+      domain:'.com.ar', country:'Argentina',
+      localCurrency:'ARS', defaultCurrency:'USD', chargeCurrency:'USD',
+      availableCurrencies:['USD','ARS'],
       route:'EZE → BRC', routeLong:'Buenos Aires → Bariloche',
       serviceFee:18500,
       flights:[
@@ -999,7 +1004,7 @@
   function priceStr(amountNative, market, toCurrency){
     var m = MARKETS[market];
     // fares are stored in the market's local currency; the site may quote another
-    var out = CUR_SYMBOL[toCurrency] + fmt.format(convert(amountNative, m.nativeCurrency, toCurrency));
+    var out = CUR_SYMBOL[toCurrency] + fmt.format(convert(amountNative, m.localCurrency, toCurrency));
     if(toCurrency !== m.defaultCurrency) out += ' ' + CUR_LABEL[toCurrency];
     return out;
   }
@@ -1258,10 +1263,21 @@
     document.getElementById('row-total').textContent = priceStr(total, state.market, state.currency);
     document.getElementById('row-total-sub').textContent = 'Impuestos y cargos incluidos';
 
-    var native = m.nativeCurrency;
-    document.getElementById('charge-copy-text').innerHTML = state.currency === native
-      ? 'Se te cobrará en <b>' + native + '</b>. Si tu tarjeta fue emitida fuera de ' + m.country + ', tu banco puede aplicar su propia conversión.'
-      : 'Ves los precios en <b>' + state.currency + '</b>, pero el cobro se procesa en tu moneda local: <b>' + priceStr(total, state.market, native) + '</b>. Tu banco define el tipo de cambio final.';
+    var charge = m.chargeCurrency;
+    var copyEl = document.getElementById('charge-copy-text');
+    if(state.currency !== charge){
+      // the displayed amount is not what gets settled — say so plainly
+      copyEl.innerHTML = 'El importe en <b>' + state.currency + '</b> es solo de referencia: el cobro se procesa en <b>' +
+        priceStr(total, state.market, charge) + '</b> y tu banco define el tipo de cambio final.';
+    } else if(charge === m.localCurrency){
+      copyEl.innerHTML = 'Se te cobrará en <b>' + charge + '</b>. Si tu tarjeta fue emitida fuera de ' + m.country +
+        ', tu banco puede aplicar su propia conversión.';
+    } else {
+      // settled in a currency that isn't the market's own: the final local amount
+      // is set by the bank, not by us
+      copyEl.innerHTML = 'Se te cobrará en <b>' + charge + '</b>. Tu banco convierte el monto a ' + m.localCurrency +
+        ' con su propio tipo de cambio y los impuestos que correspondan.';
+    }
   }
 
   function render(){
@@ -1399,7 +1415,7 @@
       m.availableCurrencies.forEach(function(c){
         pop.appendChild(curOption(c, {
           title:c + ' (' + CUR_SYMBOL[c] + ')', sub:CUR_NAME[c],
-          tag:(c === m.nativeCurrency ? 'local' : null),
+          tag:(c === m.localCurrency ? 'local' : null),
           checked:state.currency === c,
           onSelect:function(){ selectCurrency(touchpoint, c); }
         }));
@@ -1481,7 +1497,7 @@
     document.getElementById('intent-text').textContent = '¿Por qué quieres ver los precios en ' + currency + '?';
     var opts = document.getElementById('intent-options');
     opts.innerHTML = '';
-    var toLocal = currency === MARKETS[state.market].nativeCurrency;
+    var toLocal = currency === MARKETS[state.market].localCurrency;
     var choices = toLocal
       ? [['compare','Estoy comparando precios'],['charge','Quiero saber cuánto me van a cobrar'],['curious','Solo curiosidad']]
       : [['compare','Estoy comparando precios'],['card','Mi tarjeta es de otro país'],['curious','Solo curiosidad']];
