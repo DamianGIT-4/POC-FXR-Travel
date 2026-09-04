@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MX/AR Currency Funnel — PoC</title>
-<meta name="description" content="Prototipo de funnel de vuelos con selector de moneda (wallet) e instrumentacion de validacion, para mercados MX y AR.">
+<meta name="description" content="Prototipo de funnel de vuelos con selector de moneda (wallet).">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9C%88%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <style>
   :root{color-scheme: light dark;}
@@ -138,7 +138,7 @@
   /* ============ product nav ============ */
   .nav{
     background:var(--surface);border-bottom:1px solid var(--line);
-    display:flex;align-items:center;gap:16px;padding:12px 18px;
+    display:flex;align-items:center;flex-wrap:wrap;gap:16px;row-gap:9px;padding:12px 18px;
   }
   .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:-.02em;}
   .brand-mark{
@@ -214,9 +214,41 @@
   .sort-tab[aria-selected="true"] .st-name{color:var(--brand);}
   .sort-tab .st-meta{font-size:11.5px;color:var(--ink-2);font-family:'IBM Plex Mono',monospace;}
 
+  /* ============ demo hint ============ */
+  .hint{
+    background:var(--brand-tint);border:1px solid var(--brand);border-radius:12px;
+    padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start;
+  }
+  .hint-body{flex:1;min-width:0;}
+  .hint h2{font-size:13.5px;font-weight:700;color:var(--brand);margin-bottom:7px;}
+  .hint ol{margin:0;padding-left:19px;font-size:12.5px;line-height:1.65;color:var(--ink);}
+  .hint b{color:var(--brand);}
+  .hint-close{
+    background:none;border:0;color:var(--brand);cursor:pointer;font-size:15px;line-height:1;
+    padding:2px 4px;flex:none;
+  }
+
   /* ============ layout ============ */
   .layout{display:grid;grid-template-columns:248px 1fr;gap:20px;align-items:start;}
-  @media (max-width:860px){.layout{grid-template-columns:1fr;}}
+  .filters-bar{display:none;margin-bottom:12px;}
+  .filters-toggle{
+    display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center;
+    background:var(--surface);border:1px solid var(--line);border-radius:10px;
+    padding:11px 14px;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:var(--shadow-sm);
+  }
+  .filters-toggle:hover{border-color:var(--brand);}
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;}
+    .filters-bar{display:block;}
+    .filter-card{display:none;}
+    .layout[data-filters="open"] .filter-card{display:block;}
+  }
+  @media (max-width:520px){
+    .sort-tab{padding:10px 11px;}
+    .sort-tab .st-name{font-size:12px;}
+    .sort-tab .st-meta{font-size:10.5px;}
+    .drawer-fab{padding:9px 14px;font-size:11px;}
+  }
 
   .filter-card{
     background:var(--surface);border:1px solid var(--line);border-radius:12px;
@@ -278,9 +310,17 @@
   .fc-airline-name{font-size:13px;font-weight:600;}
   .fc-airline-sub{font-size:11.5px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace;}
 
-  .fc-times{display:flex;align-items:center;gap:14px;}
+  .legs{display:flex;flex-direction:column;gap:10px;}
+  .leg-row{display:flex;align-items:center;gap:13px;}
+  .leg-label{
+    flex:none;width:52px;font-size:9.5px;font-weight:700;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--ink-3);line-height:1.35;
+  }
+  .leg-label .leg-date{display:block;font-weight:500;letter-spacing:0;font-size:10px;}
+  .fc-times{display:flex;align-items:center;gap:14px;flex:1;min-width:0;}
   .fc-time{display:flex;flex-direction:column;}
-  .fc-time .t{font-size:21px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:-.02em;line-height:1.15;}
+  .fc-time .t{font-size:19px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:-.02em;line-height:1.15;}
+  .fc-time .t sup{font-size:10px;color:var(--warn);font-weight:600;margin-left:1px;}
   .fc-time .a{font-size:11.5px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace;}
   .fc-leg{flex:1;min-width:70px;display:flex;flex-direction:column;align-items:center;gap:4px;}
   .fc-leg .dur{font-size:11.5px;color:var(--ink-2);font-family:'IBM Plex Mono',monospace;}
@@ -592,6 +632,18 @@
   <!-- ============ RESULTS ============ -->
   <section id="screen-results">
 
+    <div class="hint" id="hint">
+      <div class="hint-body">
+        <h2>Qué probar en este prototipo</h2>
+        <ol>
+          <li>Abrí el <b>wallet</b> (arriba a la derecha) y elegí USD — todos los precios se recalculan.</li>
+          <li>Usá <b>≈ Comparar</b> para agregar una moneda de referencia sin cambiar el precio real.</li>
+          <li>Abrí el <b>Panel de datos</b> (abajo a la derecha) para ver qué se registraría.</li>
+        </ol>
+      </div>
+      <button class="hint-close" id="hint-close" aria-label="Ocultar">✕</button>
+    </div>
+
     <div class="sort-tabs" role="tablist" aria-label="Ordenar">
       <button class="sort-tab" id="sort-best" role="tab" data-sort="best" aria-selected="true">
         <span class="st-name">Mejor</span><span class="st-meta" id="meta-best"></span>
@@ -604,7 +656,14 @@
       </button>
     </div>
 
-    <div class="layout">
+    <div class="filters-bar">
+      <button class="filters-toggle" id="filters-toggle" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" style="width:15px;height:15px;"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <span id="filters-toggle-label">Filtros</span>
+      </button>
+    </div>
+
+    <div class="layout" id="layout" data-filters="closed">
       <aside class="filter-card">
         <h3>Filtros</h3>
         <div class="filter-group">
@@ -779,7 +838,7 @@
   var KIND_LABEL = { switch:'cambio real', estimate:'estimado' };
   var REASON_LABEL = {
     compare:'Comparando precios', card:'Tarjeta de otro país', curious:'Solo curiosidad',
-    skipped:'Sin responder', reverted:'Volvió a moneda local'
+    dismissed:'Cerró la encuesta', ignored:'No respondió', reverted:'Volvió a moneda local'
   };
 
   var AIRLINE_COLOR = {
@@ -796,11 +855,16 @@
       route:'MEX → CUN', routeLong:'Ciudad de México → Cancún',
       serviceFee:189,
       flights:[
-        {code:'Y4', airline:'Volaris', num:'632', dep:'06:05', arr:'08:20', mins:135, from:'MEX', to:'CUN', stops:0, tier:'Basic', price:3180, co2:118, seats:4, cabin:true, checked:false},
-        {code:'VB', airline:'VivaAerobus', num:'205', dep:'09:40', arr:'11:55', mins:135, from:'MEX', to:'CUN', stops:0, tier:'Basic', price:2860, co2:112, cabin:true, checked:false},
-        {code:'AM', airline:'Aeroméxico', num:'480', dep:'13:15', arr:'15:35', mins:140, from:'MEX', to:'CUN', stops:0, tier:'Classic', price:5240, co2:131, cabin:true, checked:true},
-        {code:'Y4', airline:'Volaris', num:'210', dep:'18:50', arr:'21:10', mins:140, from:'MEX', to:'CUN', stops:0, tier:'Plus', price:4120, co2:120, cabin:true, checked:true},
-        {code:'VB', airline:'VivaAerobus', num:'880', dep:'05:30', arr:'12:45', mins:435, from:'MEX', to:'CUN', stops:1, via:'MTY', tier:'Basic', price:2340, co2:186, cabin:true, checked:false}
+        {code:'Y4', airline:'Volaris', num:'632', dep:'06:05', arr:'08:20', mins:135, from:'MEX', to:'CUN', stops:0, tier:'Basic', price:3180, co2:118, seats:4, cabin:true, checked:false,
+          ret:{num:'633', dep:'09:10', arr:'11:35', mins:145, stops:0}},
+        {code:'VB', airline:'VivaAerobus', num:'205', dep:'09:40', arr:'11:55', mins:135, from:'MEX', to:'CUN', stops:0, tier:'Basic', price:2860, co2:112, cabin:true, checked:false,
+          ret:{num:'206', dep:'12:30', arr:'14:50', mins:140, stops:0}},
+        {code:'AM', airline:'Aeroméxico', num:'480', dep:'13:15', arr:'15:35', mins:140, from:'MEX', to:'CUN', stops:0, tier:'Classic', price:5240, co2:131, cabin:true, checked:true,
+          ret:{num:'481', dep:'16:40', arr:'19:05', mins:145, stops:0}},
+        {code:'Y4', airline:'Volaris', num:'210', dep:'18:50', arr:'21:10', mins:140, from:'MEX', to:'CUN', stops:0, tier:'Plus', price:4120, co2:120, cabin:true, checked:true,
+          ret:{num:'211', dep:'21:55', arr:'00:20', mins:145, stops:0, plusDay:true}},
+        {code:'VB', airline:'VivaAerobus', num:'880', dep:'05:30', arr:'12:45', mins:435, from:'MEX', to:'CUN', stops:1, via:'MTY', tier:'Basic', price:2340, co2:186, cabin:true, checked:false,
+          ret:{num:'881', dep:'14:20', arr:'21:15', mins:415, stops:1, via:'MTY'}}
       ]
     },
     ar: {
@@ -809,11 +873,16 @@
       route:'EZE → BRC', routeLong:'Buenos Aires → Bariloche',
       serviceFee:18500,
       flights:[
-        {code:'AR', airline:'Aerolíneas Argentinas', num:'1804', dep:'07:10', arr:'09:35', mins:145, from:'EZE', to:'BRC', stops:0, tier:'Promo', price:312800, co2:148, cabin:true, checked:false},
-        {code:'JA', airline:'JetSmart', num:'601', dep:'10:20', arr:'12:50', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Zero', price:218400, co2:141, cabin:true, checked:false},
-        {code:'FO', airline:'Flybondi', num:'2310', dep:'14:05', arr:'16:40', mins:155, from:'EZE', to:'BRC', stops:0, tier:'Basic', price:204900, co2:144, seats:3, cabin:true, checked:false},
-        {code:'AR', airline:'Aerolíneas Argentinas', num:'1830', dep:'19:45', arr:'22:15', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Flex', price:389600, co2:147, cabin:true, checked:true},
-        {code:'JA', airline:'JetSmart', num:'615', dep:'05:50', arr:'13:20', mins:450, from:'EZE', to:'BRC', stops:1, via:'AEP', tier:'Zero', price:177300, co2:205, cabin:true, checked:false}
+        {code:'AR', airline:'Aerolíneas Argentinas', num:'1804', dep:'07:10', arr:'09:35', mins:145, from:'EZE', to:'BRC', stops:0, tier:'Promo', price:312800, co2:148, cabin:true, checked:false,
+          ret:{num:'1805', dep:'10:25', arr:'12:50', mins:145, stops:0}},
+        {code:'JA', airline:'JetSmart', num:'601', dep:'10:20', arr:'12:50', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Zero', price:218400, co2:141, cabin:true, checked:false,
+          ret:{num:'602', dep:'13:40', arr:'16:05', mins:145, stops:0}},
+        {code:'FO', airline:'Flybondi', num:'2310', dep:'14:05', arr:'16:40', mins:155, from:'EZE', to:'BRC', stops:0, tier:'Basic', price:204900, co2:144, seats:3, cabin:true, checked:false,
+          ret:{num:'2311', dep:'17:30', arr:'20:00', mins:150, stops:0}},
+        {code:'AR', airline:'Aerolíneas Argentinas', num:'1830', dep:'19:45', arr:'22:15', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Flex', price:389600, co2:147, cabin:true, checked:true,
+          ret:{num:'1831', dep:'23:05', arr:'01:30', mins:145, stops:0, plusDay:true}},
+        {code:'JA', airline:'JetSmart', num:'615', dep:'05:50', arr:'13:20', mins:450, from:'EZE', to:'BRC', stops:1, via:'AEP', tier:'Zero', price:177300, co2:205, cabin:true, checked:false,
+          ret:{num:'616', dep:'15:10', arr:'22:25', mins:435, stops:1, via:'AEP'}}
       ]
     }
   };
@@ -823,10 +892,14 @@
     screen:'results', selectedFlight:null, sort:'best',
     filters:{ nonstopOnly:false, airlines:{}, maxPricePct:100 },
     events:[], overrideHistory:{mx:null, ar:null},
-    popoverTouchpoint:null, intentTimer:null, showNotes:false
+    popoverTouchpoint:null, intentTimer:null, pendingIntent:null,
+    showNotes:false, filtersOpen:false, hintDismissed:false
   };
 
   /* ---------- persistence ---------- */
+  function loadPrefs(){
+    try{ state.hintDismissed = localStorage.getItem('trayecto-hint-dismissed') === '1'; }catch(e){}
+  }
   function loadPersisted(){
     try{
       var raw = localStorage.getItem('trayecto-currency');
@@ -853,6 +926,29 @@
     return out;
   }
   function durStr(mins){ return Math.floor(mins/60) + 'h ' + (mins%60 < 10 ? '0' : '') + (mins%60) + 'm'; }
+  function totalMins(f){ return f.mins + (f.ret ? f.ret.mins : 0); }
+
+  // one leg of the itinerary: times, duration, stop marker
+  function legRow(label, date, dep, from, arr, to, mins, stops, via, plusDay){
+    return '<div class="leg-row">' +
+      '<span class="leg-label">' + label + '<span class="leg-date">' + date + '</span></span>' +
+      '<div class="fc-times">' +
+        '<div class="fc-time"><span class="t">' + dep + '</span><span class="a">' + from + '</span></div>' +
+        '<div class="fc-leg">' +
+          '<span class="dur">' + durStr(mins) + '</span>' +
+          '<div class="leg-line">' + (stops ? '<span class="stop-dot"></span>' : '') + '</div>' +
+          '<span class="stops ' + (stops ? 'via' : 'direct') + '">' + (stops ? '1 escala · ' + via : 'Directo') + '</span>' +
+        '</div>' +
+        '<div class="fc-time"><span class="t">' + arr + (plusDay ? '<sup>+1</sup>' : '') + '</span><span class="a">' + to + '</span></div>' +
+      '</div>' +
+    '</div>';
+  }
+  function itinerary(f){
+    return '<div class="legs">' +
+      legRow('Ida', '18 sep', f.dep, f.from, f.arr, f.to, f.mins, f.stops, f.via, false) +
+      (f.ret ? legRow('Vuelta', '25 sep', f.ret.dep, f.to, f.ret.arr, f.from, f.ret.mins, f.ret.stops, f.ret.via, f.ret.plusDay) : '') +
+    '</div>';
+  }
 
   /* ---------- filtering + sorting ---------- */
   function visibleFlights(){
@@ -870,19 +966,19 @@
 
     var sorted = list.slice();
     if(state.sort === 'cheapest') sorted.sort(function(a,b){ return a.price - b.price; });
-    else if(state.sort === 'fastest') sorted.sort(function(a,b){ return a.mins - b.mins; });
+    else if(state.sort === 'fastest') sorted.sort(function(a,b){ return totalMins(a) - totalMins(b); });
     else {
       var byPrice = list.slice().sort(function(a,b){ return a.price - b.price; });
-      var byTime  = list.slice().sort(function(a,b){ return a.mins - b.mins; });
+      var byTime  = list.slice().sort(function(a,b){ return totalMins(a) - totalMins(b); });
       sorted.sort(function(a,b){
         return (byPrice.indexOf(a) + byTime.indexOf(a)) - (byPrice.indexOf(b) + byTime.indexOf(b));
       });
     }
     return sorted;
   }
-  function extreme(list, key){
+  function extreme(list, valueOf){
     if(!list.length) return null;
-    return list.reduce(function(best, f){ return f[key] < best[key] ? f : best; }, list[0]);
+    return list.reduce(function(best, f){ return valueOf(f) < valueOf(best) ? f : best; }, list[0]);
   }
 
   /* ---------- renders ---------- */
@@ -900,6 +996,11 @@
     document.getElementById('notes-toggle').setAttribute('aria-pressed', state.showNotes);
     document.getElementById('note-results').hidden = !state.showNotes;
     document.getElementById('note-fare').hidden = !state.showNotes;
+
+    document.getElementById('hint').hidden = state.hintDismissed;
+    document.getElementById('layout').setAttribute('data-filters', state.filtersOpen ? 'open' : 'closed');
+    document.getElementById('filters-toggle').setAttribute('aria-expanded', state.filtersOpen);
+    document.getElementById('filters-toggle-label').textContent = state.filtersOpen ? 'Ocultar filtros' : 'Filtros';
   }
 
   function renderFilters(){
@@ -942,11 +1043,11 @@
   function renderSortTabs(){
     var m = MARKETS[state.market];
     var byPrice = m.flights.slice().sort(function(a,b){ return a.price - b.price; })[0];
-    var byTime  = m.flights.slice().sort(function(a,b){ return a.mins - b.mins; })[0];
-    document.getElementById('meta-cheapest').textContent = priceStr(byPrice.price, state.market, state.currency) + ' · ' + durStr(byPrice.mins);
-    document.getElementById('meta-fastest').textContent  = priceStr(byTime.price, state.market, state.currency) + ' · ' + durStr(byTime.mins);
+    var byTime  = m.flights.slice().sort(function(a,b){ return totalMins(a) - totalMins(b); })[0];
+    document.getElementById('meta-cheapest').textContent = priceStr(byPrice.price, state.market, state.currency) + ' · ' + durStr(totalMins(byPrice));
+    document.getElementById('meta-fastest').textContent  = priceStr(byTime.price, state.market, state.currency) + ' · ' + durStr(totalMins(byTime));
     var best = visibleFlights()[0] || byPrice;
-    document.getElementById('meta-best').textContent = priceStr(best.price, state.market, state.currency) + ' · ' + durStr(best.mins);
+    document.getElementById('meta-best').textContent = priceStr(best.price, state.market, state.currency) + ' · ' + durStr(totalMins(best));
 
     ['best','cheapest','fastest'].forEach(function(k){
       document.getElementById('sort-' + k).setAttribute('aria-selected', state.sort === k);
@@ -963,8 +1064,8 @@
   function renderResults(){
     var m = MARKETS[state.market];
     var list = visibleFlights();
-    var cheapest = extreme(list, 'price');
-    var fastest  = extreme(list, 'mins');
+    var cheapest = extreme(list, function(f){ return f.price; });
+    var fastest  = extreme(list, totalMins);
 
     document.getElementById('results-count').innerHTML =
       '<b>' + list.length + '</b> de ' + m.flights.length + ' vuelos · ida y vuelta · precios para 2 pasajeros';
@@ -1017,17 +1118,9 @@
           '<div class="fc-left">' +
             '<div class="fc-airline">' +
               '<span class="airline-mark" style="background:' + (AIRLINE_COLOR[f.airline] || '#555') + '">' + f.code + '</span>' +
-              '<span><span class="fc-airline-name">' + f.airline + '</span><br><span class="fc-airline-sub">' + f.code + ' ' + f.num + '</span></span>' +
+              '<span><span class="fc-airline-name">' + f.airline + '</span><br><span class="fc-airline-sub">' + f.code + ' ' + f.num + ' · ' + f.code + ' ' + (f.ret ? f.ret.num : '') + '</span></span>' +
             '</div>' +
-            '<div class="fc-times">' +
-              '<div class="fc-time"><span class="t">' + f.dep + '</span><span class="a">' + f.from + '</span></div>' +
-              '<div class="fc-leg">' +
-                '<span class="dur">' + durStr(f.mins) + '</span>' +
-                '<div class="leg-line">' + (f.stops ? '<span class="stop-dot"></span>' : '') + '</div>' +
-                '<span class="stops ' + (f.stops ? 'via' : 'direct') + '">' + (f.stops ? '1 escala · ' + f.via : 'Directo') + '</span>' +
-              '</div>' +
-              '<div class="fc-time"><span class="t">' + f.arr + '</span><span class="a">' + f.to + '</span></div>' +
-            '</div>' +
+            itinerary(f) +
             '<div class="fc-meta">' +
               '<span class="item ' + (f.cabin ? 'on' : 'off') + '">' + bagIcon() + 'Equipaje de mano</span>' +
               '<span class="item ' + (f.checked ? 'on' : 'off') + '">' + bagIcon() + 'Equipaje facturado</span>' +
@@ -1059,13 +1152,12 @@
 
     document.getElementById('fare-tier-tag').textContent = 'Tarifa ' + f.tier;
     document.getElementById('fare-leg').innerHTML =
-      '<span class="airline-mark" style="background:' + (AIRLINE_COLOR[f.airline] || '#555') + '">' + f.code + '</span>' +
-      '<div class="fc-time"><span class="t">' + f.dep + '</span><span class="a">' + f.from + '</span></div>' +
-      '<div class="fc-leg" style="max-width:130px"><span class="dur">' + durStr(f.mins) + '</span>' +
-        '<div class="leg-line">' + (f.stops ? '<span class="stop-dot"></span>' : '') + '</div>' +
-        '<span class="stops ' + (f.stops ? 'via' : 'direct') + '">' + (f.stops ? '1 escala · ' + f.via : 'Directo') + '</span></div>' +
-      '<div class="fc-time"><span class="t">' + f.arr + '</span><span class="a">' + f.to + '</span></div>' +
-      '<div style="font-size:12.5px;color:var(--ink-2)">' + f.airline + ' · ' + f.code + ' ' + f.num + '<br>vie 18 sep</div>';
+      '<div style="display:flex;align-items:center;gap:10px;width:100%;margin-bottom:4px">' +
+        '<span class="airline-mark" style="background:' + (AIRLINE_COLOR[f.airline] || '#555') + '">' + f.code + '</span>' +
+        '<span><span class="fc-airline-name">' + f.airline + '</span><br>' +
+        '<span class="fc-airline-sub">' + f.code + ' ' + f.num + ' · ' + f.code + ' ' + (f.ret ? f.ret.num : '') + ' · ' + durStr(totalMins(f)) + ' en vuelo</span></span>' +
+      '</div>' +
+      '<div style="width:100%">' + itinerary(f) + '</div>';
 
     var yes = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>';
     var no  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
@@ -1268,11 +1360,12 @@
     render();
 
     if(currency === native){
+      cancelPendingIntent(); // reverting is itself the answer — don't survey it
       logEvent(touchpoint, currency, 'reverted', 'switch');
     } else {
       state.overrideHistory[state.market] = currency;
       renderInstrumentation();
-      showIntent(touchpoint, currency);
+      scheduleIntent(touchpoint, currency);
     }
   }
 
@@ -1284,7 +1377,24 @@
     if(currency) logEvent('results', currency, null, 'estimate');
   }
 
-  /* ---------- intent capture ---------- */
+  /* ---------- intent capture ----------
+     Deliberately delayed: firing on the switch itself interrupts the very thing
+     the traveller just asked for, and surveys misclicks that get reverted a
+     second later. Waiting lets them see the converted prices first, so the
+     answer is about a conversion they actually looked at. */
+  var INTENT_DELAY = 4000;
+
+  function scheduleIntent(touchpoint, currency){
+    cancelPendingIntent();
+    state.pendingIntent = setTimeout(function(){
+      state.pendingIntent = null;
+      showIntent(touchpoint, currency);
+    }, INTENT_DELAY);
+  }
+  function cancelPendingIntent(){
+    if(state.pendingIntent){ clearTimeout(state.pendingIntent); state.pendingIntent = null; }
+  }
+
   function showIntent(touchpoint, currency){
     var el = document.getElementById('intent');
     document.getElementById('intent-text').textContent = '¿Por qué querés ver los precios en ' + currency + '?';
@@ -1299,8 +1409,9 @@
     });
     el.classList.add('show');
     clearTimeout(state.intentTimer);
-    state.intentTimer = setTimeout(function(){ logEvent(touchpoint, currency, 'skipped'); hideIntent(); }, 9000);
-    document.getElementById('intent-close').onclick = function(){ logEvent(touchpoint, currency, 'skipped'); hideIntent(); };
+    // shown but never engaged with — distinct from an explicit dismissal
+    state.intentTimer = setTimeout(function(){ logEvent(touchpoint, currency, 'ignored'); hideIntent(); }, 9000);
+    document.getElementById('intent-close').onclick = function(){ logEvent(touchpoint, currency, 'dismissed'); hideIntent(); };
   }
   function hideIntent(){
     clearTimeout(state.intentTimer);
@@ -1332,6 +1443,7 @@
 
   function switchMarket(key, currency){
     if(state.market === key) return;
+    cancelPendingIntent(); hideIntent();
     state.market = key; state.currency = currency; state.autoCurrency = true;
     state.estimateCurrency = null; state.screen = 'results'; state.selectedFlight = null;
     state.filters = { nonstopOnly:false, airlines:{}, maxPricePct:100 };
@@ -1342,6 +1454,15 @@
 
   document.getElementById('notes-toggle').addEventListener('click', function(){
     state.showNotes = !state.showNotes;
+    renderChrome();
+  });
+  document.getElementById('hint-close').addEventListener('click', function(){
+    state.hintDismissed = true;
+    try{ localStorage.setItem('trayecto-hint-dismissed', '1'); }catch(e){}
+    renderChrome();
+  });
+  document.getElementById('filters-toggle').addEventListener('click', function(){
+    state.filtersOpen = !state.filtersOpen;
     renderChrome();
   });
 
@@ -1370,6 +1491,7 @@
     document.getElementById('drawer').classList.remove('show');
   });
 
+  loadPrefs();
   loadPersisted();
   render();
   renderInstrumentation();
