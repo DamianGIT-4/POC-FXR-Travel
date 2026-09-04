@@ -652,8 +652,8 @@
     <div class="hint" id="hint">
       <div class="hint-body">
         <strong>Qué probar:</strong>
-        elegí <b>USD</b> en el wallet de arriba · agregá una referencia con <b>≈ Comparar</b> ·
-        mirá qué se registra en <b>Panel de datos</b>
+        selecciona <b>USD</b> en el wallet de arriba · agrega una referencia con <b>≈ Comparar</b> ·
+        revisa qué se registra en <b>Panel de datos</b>
       </div>
       <button class="hint-close" id="hint-close" aria-label="Ocultar">✕</button>
     </div>
@@ -792,7 +792,7 @@
 
 <div class="intent" id="intent">
   <div class="intent-head">
-    <span class="eyebrow">Ayudanos a mejorar</span>
+    <span class="eyebrow">Ayúdanos a mejorar</span>
     <button class="intent-close" id="intent-close" aria-label="Cerrar">✕</button>
   </div>
   <p id="intent-text"></p>
@@ -1256,7 +1256,7 @@
       cross.innerHTML = '<b>Señal encontrada.</b> Esta sesión anuló la moneda local en ambos mercados (MX → ' + oh.mx + ', AR → ' + oh.ar + '): el mismo visitante eligiendo la misma moneda en más de un sitio.';
     } else if(oh.mx || oh.ar){
       cross.className = 'signal';
-      cross.textContent = 'Anulado en ' + (oh.mx ? 'MX (' + oh.mx + ')' : 'AR (' + oh.ar + ')') + '. Elegí también en el otro mercado para disparar la señal cruzada.';
+      cross.textContent = 'Anulado en ' + (oh.mx ? 'MX (' + oh.mx + ')' : 'AR (' + oh.ar + ')') + '. Cambia también la moneda en el otro mercado para disparar la señal cruzada.';
     } else {
       cross.className = 'signal';
       cross.textContent = 'Sin anulaciones todavía en ningún mercado.';
@@ -1413,7 +1413,7 @@
 
   function showIntent(touchpoint, currency){
     var el = document.getElementById('intent');
-    document.getElementById('intent-text').textContent = '¿Por qué querés ver los precios en ' + currency + '?';
+    document.getElementById('intent-text').textContent = '¿Por qué quieres ver los precios en ' + currency + '?';
     var opts = document.getElementById('intent-options');
     opts.innerHTML = '';
     [['compare','Estoy comparando precios'],['card','Mi tarjeta es de otro país'],['curious','Solo curiosidad']].forEach(function(p){
