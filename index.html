@@ -389,20 +389,6 @@
     display:flex;flex-direction:column;align-items:flex-end;gap:7px;text-align:right;
     border-left:1px solid var(--line-2);padding-left:18px;
   }
-  @container (max-width:640px){
-    /* the stacked column was 129px of a 344px card — make it a single row */
-    .fc-right{
-      flex-direction:row;align-items:center;justify-content:space-between;gap:12px;
-      text-align:left;border-left:0;padding-left:0;
-      border-top:1px solid var(--line-2);padding-top:11px;
-    }
-    .price-block{align-items:flex-start;}
-    .price-estimate{padding-left:13px;}
-    .fc-right .fare-tier{display:none;}   /* moves into the flight-number line */
-    .fc-airline-sub .tier-inline{display:inline;}
-    .price-sub{display:none;}             /* already stated in the list header */
-    .fc-right .btn-primary{flex:none;}
-  }
   .fare-tier{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);}
   .price-block{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0;}
   .tier-inline{display:none;}
@@ -415,6 +401,24 @@
   }
   .btn-primary:hover{background:var(--brand-2);}
   .btn-primary.block{width:100%;padding:13px 18px;font-size:14.5px;}
+
+  /* Mobile overrides last, so they win on source order rather than by
+     specificity tricks. Twice now a base rule declared after this block
+     silently beat it — keep new card defaults above this comment. */
+  @container (max-width:640px){
+    /* the stacked column was 129px of a 344px card — make it a single row */
+    .fc-right{
+      flex-direction:row;align-items:center;justify-content:space-between;gap:12px;
+      text-align:left;border-left:0;padding-left:0;
+      border-top:1px solid var(--line-2);padding-top:11px;
+    }
+    .price-block{align-items:flex-start;}
+    .price-estimate{padding-left:13px;}   /* hangs off the price as a sub-item */
+    .fc-right .fare-tier{display:none;}   /* moves into the flight-number line */
+    .tier-inline{display:inline;}
+    .price-sub{display:none;}             /* already stated in the list header */
+    .fc-right .btn-primary{flex:none;}
+  }
 
   .empty-state{
     background:var(--surface);border:1px solid var(--line);border-radius:14px;
