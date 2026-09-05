@@ -1040,6 +1040,17 @@
     if(toCurrency !== m.defaultCurrency) out += ' ' + CUR_LABEL[toCurrency];
     return out;
   }
+  // convert first, round once, then format - so a breakdown always sums to its
+  // total in the display currency instead of drifting by the rounding of each line
+  function convRounded(amountBase, market, cur){
+    return Math.round(convert(amountBase, MARKETS[market].baseCurrency, cur));
+  }
+  function fmtAmount(n, market, cur){
+    var out = CUR_SYMBOL[cur] + fmt.format(n);
+    if(cur !== MARKETS[market].defaultCurrency) out += ' ' + CUR_LABEL[cur];
+    return out;
+  }
+
   // always carries the ISO code: used where copy names the settlement currency
   function priceStrExplicit(amountBase, market, cur){
     var m = MARKETS[market];
@@ -1307,10 +1318,15 @@
     var fee  = m.serviceFee;
     var total = (f.price * PAX) + fee;
 
-    document.getElementById('row-base').textContent = priceStr(base, state.market, state.currency);
-    document.getElementById('row-tax').textContent  = priceStr(tax, state.market, state.currency);
-    document.getElementById('row-fee').textContent  = priceStr(fee, state.market, state.currency);
-    document.getElementById('row-total').textContent = priceStr(total, state.market, state.currency);
+    var dBase = convRounded(base, state.market, state.currency);
+    var dTax  = convRounded(tax,  state.market, state.currency);
+    var dFee  = convRounded(fee,  state.market, state.currency);
+    var dTotal = dBase + dTax + dFee;   // the rows are the source of the total
+
+    document.getElementById('row-base').textContent = fmtAmount(dBase, state.market, state.currency);
+    document.getElementById('row-tax').textContent  = fmtAmount(dTax, state.market, state.currency);
+    document.getElementById('row-fee').textContent  = fmtAmount(dFee, state.market, state.currency);
+    document.getElementById('row-total').textContent = fmtAmount(dTotal, state.market, state.currency);
     document.getElementById('row-total-sub').textContent = '2 pasajeros · impuestos y cargos incluidos';
 
     var charge = m.chargeCurrency;
