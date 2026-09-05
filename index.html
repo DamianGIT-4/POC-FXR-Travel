@@ -323,6 +323,9 @@
   .compare-trigger .approx{font-size:14px;font-weight:700;color:var(--brand);}
   .compare-trigger.active{border-style:solid;border-color:var(--brand);color:var(--brand);background:var(--brand-tint);}
 
+  .estimate-caveat{
+    margin:0 0 10px;font-size:11.5px;line-height:1.5;color:var(--ink-3);
+  }
   .flight-list{display:flex;flex-direction:column;gap:8px;}
   .flight-card{
     background:var(--surface);border:1px solid var(--line);border-radius:14px;
@@ -850,6 +853,8 @@
           </button>
         </div>
 
+        <p class="estimate-caveat" id="estimate-caveat" hidden></p>
+
         <div class="flight-list" id="flight-list"></div>
 
         <div class="pm-note" id="note-results" hidden>
@@ -1114,11 +1119,6 @@
     return out;
   }
 
-  // always carries the ISO code: used where copy names the settlement currency
-  function priceStrExplicit(amountBase, market, cur){
-    var m = MARKETS[market];
-    return CUR_SYMBOL[cur] + fmt.format(convert(amountBase, m.baseCurrency, cur)) + ' ' + CUR_LABEL[cur];
-  }
   function durStr(mins){ return Math.floor(mins/60) + 'h ' + (mins%60 < 10 ? '0' : '') + (mins%60) + 'm'; }
   function totalMins(f){ return f.mins + (f.ret ? f.ret.mins : 0); }
 
@@ -1306,6 +1306,14 @@
       cmpLabel.textContent = 'Comparar en otra moneda';
     }
 
+    var cav = document.getElementById('estimate-caveat');
+    if(state.estimateCurrency){
+      cav.hidden = false;
+      cav.textContent = 'Los importes con ≈ son estimados de referencia. El cobro se procesa en ' + m.chargeCurrency + '.';
+    } else {
+      cav.hidden = true;
+    }
+
     var box = document.getElementById('flight-list');
     box.innerHTML = '';
 
@@ -1435,7 +1443,7 @@
     if(state.currency !== charge){
       // the displayed amount is not what gets settled — say so plainly
       copyEl.innerHTML = 'El importe en <b>' + state.currency + '</b> es solo de referencia: el cobro se procesa en <b>' +
-        priceStrExplicit(total, state.market, charge) + '</b> y tu banco define el tipo de cambio final.';
+        charge + '</b> y tu banco define el tipo de cambio final.';
     } else if(charge === m.localCurrency){
       copyEl.innerHTML = 'Se te cobrará en <b>' + charge + '</b>. Si tu tarjeta fue emitida fuera de ' + m.country +
         ', tu banco puede aplicar su propia conversión.';
