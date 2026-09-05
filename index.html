@@ -644,6 +644,62 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+  /* ============ mobile: matches the shape of the live mobile funnel ============
+     Appended last on purpose - every rule here has to win over the base card
+     and layout rules above. */
+  .controls-row{display:contents;}
+  .date-strip{display:none;}
+
+  @container (max-width:860px){
+    /* date comparison strip above the results */
+    .date-strip{display:block;margin-bottom:12px;}
+    .date-strip-title{font-size:13px;font-weight:700;margin-bottom:9px;}
+    .date-chips{
+      display:flex;gap:8px;overflow-x:auto;padding-bottom:3px;
+      scrollbar-width:none;-ms-overflow-style:none;
+    }
+    .date-chips::-webkit-scrollbar{display:none;}
+    .date-chip{
+      flex:none;display:flex;flex-direction:column;gap:2px;align-items:center;
+      background:var(--surface);border:1px solid var(--line);border-radius:11px;
+      padding:9px 13px;cursor:pointer;white-space:nowrap;
+    }
+    .date-chip .dc-range{font-size:12px;color:var(--ink-2);font-family:'IBM Plex Mono',monospace;}
+    .date-chip .dc-price{font-size:13.5px;font-weight:700;}
+    .date-chip .dc-price.pending{color:var(--ink-3);font-weight:500;}
+    .date-chip.current{border-color:var(--brand);background:var(--brand-tint);}
+    .date-chip.current .dc-range,.date-chip.current .dc-price{color:var(--brand);}
+
+    /* sort + filters collapse into one horizontally scrolling chip row */
+    .controls-row{
+      display:flex;gap:8px;overflow-x:auto;margin-bottom:12px;padding-bottom:3px;
+      scrollbar-width:none;-ms-overflow-style:none;
+    }
+    .controls-row::-webkit-scrollbar{display:none;}
+    .filters-bar{order:-1;flex:none;margin:0;}
+    .filters-toggle{width:auto;border-radius:999px;padding:8px 14px;white-space:nowrap;box-shadow:none;}
+    .sort-tabs{
+      display:flex;gap:8px;flex:none;margin:0;
+      background:none;border:0;border-radius:0;box-shadow:none;overflow:visible;
+    }
+    .sort-tab{
+      flex:none;border:1px solid var(--line);border-right:1px solid var(--line);
+      border-radius:999px;padding:8px 14px;white-space:nowrap;
+      background:var(--surface);
+    }
+    .sort-tab[aria-selected="true"]{
+      background:var(--brand-tint);border-color:var(--brand);box-shadow:none;
+    }
+    .sort-tab .st-meta{display:none;}
+    .sort-tab .st-name{font-size:13px;}
+  }
+
+  @container (max-width:640px){
+    /* the whole card is the target on mobile - no separate CTA */
+    .fc-right .btn-primary{display:none;}
+    .flight-card{cursor:pointer;}
+  }
+
   @media (prefers-reduced-motion:reduce){
     .flight-card,.toast,.intent,.drawer{transition:none;}
   }
@@ -739,6 +795,12 @@
       <button class="hint-close" id="hint-close" aria-label="Ocultar">✕</button>
     </div>
 
+    <div class="date-strip" id="date-strip">
+      <div class="date-strip-title">Compara diferentes fechas y precios</div>
+      <div class="date-chips" id="date-chips"></div>
+    </div>
+
+    <div class="controls-row">
     <div class="sort-tabs" role="tablist" aria-label="Ordenar">
       <button class="sort-tab" id="sort-best" role="tab" data-sort="best" aria-selected="true">
         <span class="st-name">Mejor</span><span class="st-meta" id="meta-best"></span>
@@ -757,6 +819,7 @@
         <span id="filters-toggle-label">Filtros</span>
       </button>
     </div>
+    </div><!-- /controls-row -->
 
     <div class="layout" id="layout" data-filters="closed">
       <aside class="filter-card">
@@ -1193,7 +1256,38 @@
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5.5-13 14-13 0 8.5-5 14-14 13Z"/><path d="M8 16c2.5-3 5-5 8-6.5"/></svg>';
   }
 
+  // alternative date ranges, priced off the cheapest fare in the market
+  var DATE_OPTIONS = [
+    {range:'04 sep — 11 sep', factor:0.88},
+    {range:'11 sep — 18 sep', factor:0.94},
+    {range:'18 sep — 25 sep', factor:1, current:true},
+    {range:'25 sep — 02 oct', factor:1.09},
+    {range:'02 oct — 09 oct', factor:null}   // not searched yet, like the real strip
+  ];
+
+  function renderDateStrip(){
+    var m = MARKETS[state.market];
+    var cheapest = m.flights.reduce(function(a,b){ return b.price < a.price ? b : a; }).price;
+    var box = document.getElementById('date-chips');
+    box.innerHTML = '';
+    DATE_OPTIONS.forEach(function(d){
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'date-chip' + (d.current ? ' current' : '');
+      var price = d.factor == null
+        ? '<span class="dc-price pending">buscar</span>'
+        : '<span class="dc-price">' + priceStr(Math.round(cheapest * d.factor), state.market, state.currency) + '</span>';
+      chip.innerHTML = '<span class="dc-range">' + d.range + '</span>' + price;
+      chip.addEventListener('click', function(){
+        if(d.current) return;
+        showToast('Fuera de alcance del prototipo — no se relanza la búsqueda.');
+      });
+      box.appendChild(chip);
+    });
+  }
+
   function renderResults(){
+    renderDateStrip();
     var m = MARKETS[state.market];
     var list = visibleFlights();
     var cheapest = extreme(list, function(f){ return f.price; });
@@ -1280,12 +1374,19 @@
           state.popoverKey = key;
         });
       });
-      card.querySelector('.btn-primary').addEventListener('click', function(){
+      var select = function(){
         cancelPendingIntent();
         state.selectedFlight = f;
         state.screen = 'payment';
         window.scrollTo(0,0);
+        document.getElementById('shell').scrollTop = 0;
         render();
+      };
+      var cta = card.querySelector('.btn-primary');
+      cta.addEventListener('click', function(e){ e.stopPropagation(); select(); });
+      // on mobile the CTA is hidden and the card itself is the target
+      card.addEventListener('click', function(){
+        if(getComputedStyle(cta).display === 'none') select();
       });
       box.appendChild(card);
     });
