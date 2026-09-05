@@ -635,6 +635,7 @@
     <button class="market-tab" id="tab-ar" role="tab" aria-selected="false">AR · .com.ar</button>
   </div>
   <div class="proto-spacer"></div>
+  <button class="proto-btn" id="reset-demo">Reiniciar</button>
   <button class="proto-btn" id="device-toggle" aria-pressed="false">Vista móvil</button>
   <button class="proto-btn" id="notes-toggle" aria-pressed="false">Notas de producto</button>
 </div>
@@ -928,10 +929,11 @@
   var MARKETS = {
     mx: {
       domain:'.com.mx', country:'México',
-      // localCurrency: market's own currency (and the base the fares are stored in)
+      // localCurrency: the market's own currency
       // defaultCurrency: what the site quotes on arrival
       // chargeCurrency: what the customer's card is actually settled in
-      localCurrency:'MXN', defaultCurrency:'MXN', chargeCurrency:'MXN',
+      // baseCurrency: the currency the fares below are expressed in
+      localCurrency:'MXN', baseCurrency:'MXN', defaultCurrency:'MXN', chargeCurrency:'MXN',
       availableCurrencies:['MXN','USD'],
       route:'MEX → CUN', routeLong:'Ciudad de México → Cancún',
       serviceFee:189,
@@ -950,20 +952,20 @@
     },
     ar: {
       domain:'.com.ar', country:'Argentina',
-      localCurrency:'ARS', defaultCurrency:'USD', chargeCurrency:'USD',
+      localCurrency:'ARS', baseCurrency:'USD', defaultCurrency:'USD', chargeCurrency:'USD',
       availableCurrencies:['USD','ARS'],
       route:'EZE → BRC', routeLong:'Buenos Aires → Bariloche',
-      serviceFee:18500,
+      serviceFee:12,
       flights:[
-        {code:'AR', airline:'Aerolíneas Argentinas', num:'1804', dep:'07:10', arr:'09:35', mins:145, from:'EZE', to:'BRC', stops:0, tier:'Promo', price:312800, co2:148, cabin:true, checked:false,
+        {code:'AR', airline:'Aerolíneas Argentinas', num:'1804', dep:'07:10', arr:'09:35', mins:145, from:'EZE', to:'BRC', stops:0, tier:'Promo', price:214, co2:148, cabin:true, checked:false,
           ret:{num:'1805', dep:'10:25', arr:'12:50', mins:145, stops:0}},
-        {code:'JA', airline:'JetSmart', num:'601', dep:'10:20', arr:'12:50', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Zero', price:218400, co2:141, cabin:true, checked:false,
+        {code:'JA', airline:'JetSmart', num:'601', dep:'10:20', arr:'12:50', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Zero', price:149, co2:141, cabin:true, checked:false,
           ret:{num:'602', dep:'13:40', arr:'16:05', mins:145, stops:0}},
-        {code:'FO', airline:'Flybondi', num:'2310', dep:'14:05', arr:'16:40', mins:155, from:'EZE', to:'BRC', stops:0, tier:'Basic', price:204900, co2:144, seats:3, cabin:true, checked:false,
+        {code:'FO', airline:'Flybondi', num:'2310', dep:'14:05', arr:'16:40', mins:155, from:'EZE', to:'BRC', stops:0, tier:'Basic', price:138, co2:144, seats:3, cabin:true, checked:false,
           ret:{num:'2311', dep:'17:30', arr:'20:00', mins:150, stops:0}},
-        {code:'AR', airline:'Aerolíneas Argentinas', num:'1830', dep:'19:45', arr:'22:15', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Flex', price:389600, co2:147, cabin:true, checked:true,
+        {code:'AR', airline:'Aerolíneas Argentinas', num:'1830', dep:'19:45', arr:'22:15', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Flex', price:266, co2:147, cabin:true, checked:true,
           ret:{num:'1831', dep:'23:05', arr:'01:30', mins:145, stops:0, plusDay:true}},
-        {code:'JA', airline:'JetSmart', num:'615', dep:'05:50', arr:'13:20', mins:450, from:'EZE', to:'BRC', stops:1, via:'AEP', tier:'Zero', price:177300, co2:205, cabin:true, checked:false,
+        {code:'JA', airline:'JetSmart', num:'615', dep:'05:50', arr:'13:20', mins:450, from:'EZE', to:'BRC', stops:1, via:'AEP', tier:'Zero', price:121, co2:205, cabin:true, checked:false,
           ret:{num:'616', dep:'15:10', arr:'22:25', mins:435, stops:1, via:'AEP'}}
       ]
     }
@@ -1004,14 +1006,14 @@
   function priceStr(amountNative, market, toCurrency){
     var m = MARKETS[market];
     // fares are stored in the market's local currency; the site may quote another
-    var out = CUR_SYMBOL[toCurrency] + fmt.format(convert(amountNative, m.localCurrency, toCurrency));
+    var out = CUR_SYMBOL[toCurrency] + fmt.format(convert(amountNative, m.baseCurrency, toCurrency));
     if(toCurrency !== m.defaultCurrency) out += ' ' + CUR_LABEL[toCurrency];
     return out;
   }
   // always carries the ISO code: used where copy names the settlement currency
-  function priceStrExplicit(amountLocal, market, cur){
+  function priceStrExplicit(amountBase, market, cur){
     var m = MARKETS[market];
-    return CUR_SYMBOL[cur] + fmt.format(convert(amountLocal, m.localCurrency, cur)) + ' ' + CUR_LABEL[cur];
+    return CUR_SYMBOL[cur] + fmt.format(convert(amountBase, m.baseCurrency, cur)) + ' ' + CUR_LABEL[cur];
   }
   function durStr(mins){ return Math.floor(mins/60) + 'h ' + (mins%60 < 10 ? '0' : '') + (mins%60) + 'm'; }
   function totalMins(f){ return f.mins + (f.ret ? f.ret.mins : 0); }
@@ -1604,6 +1606,27 @@
   document.getElementById('btn-cta').addEventListener('click', function(){
     showToast('Fuera de alcance del prototipo — el paso 3 (pasajeros) todavía no está especificado.');
   });
+  // a stored currency choice survives reloads, which leaves a demo in a
+  // non-default state on the next visit — this returns it to a first visit
+  document.getElementById('reset-demo').addEventListener('click', function(){
+    try{
+      localStorage.removeItem('trayecto-currency');
+      localStorage.removeItem('trayecto-hint-dismissed');
+    }catch(e){}
+    location.reload();
+  });
+
+  // ---- 3. Escape closes whatever is on top ----
+  document.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    if(!document.getElementById('popover').hidden){ closePopover(); return; }
+    if(document.getElementById('intent').classList.contains('show')){
+      document.getElementById('intent-close').click(); return;
+    }
+    var drawer = document.getElementById('drawer');
+    if(drawer.classList.contains('show')) drawer.classList.remove('show');
+  });
+
   document.getElementById('drawer-fab').addEventListener('click', function(){
     document.getElementById('drawer').classList.add('show');
   });
