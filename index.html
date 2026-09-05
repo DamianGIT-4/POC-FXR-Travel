@@ -499,6 +499,30 @@
   .charge-copy svg{width:15px;height:15px;flex:none;color:var(--ink-3);margin-top:1px;}
   .charge-copy b{color:var(--ink);}
 
+  .step.skipped .step-dot{background:var(--line-2);color:var(--ink-3);}
+  .step.skipped .step-name{font-style:italic;color:var(--ink-3);}
+
+  /* payment method: deliberately inert placeholders, never real inputs */
+  .pay-stub{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .pay-row{display:flex;flex-direction:column;gap:5px;grid-column:1 / -1;}
+  .pay-row.half{grid-column:auto;}
+  .pay-label{font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em;}
+  .pay-box{height:38px;border-radius:9px;background:var(--surface-2);border:1px dashed var(--line);}
+  .pay-note{margin:13px 0 0;font-size:11.5px;color:var(--ink-3);font-style:italic;}
+
+  /* per-leg details, matching where the live funnel puts them */
+  .leg-info{
+    flex:none;width:19px;height:19px;border-radius:50%;cursor:pointer;
+    border:1px solid var(--line);background:var(--surface);color:var(--ink-3);
+    font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;
+    display:flex;align-items:center;justify-content:center;padding:0;
+  }
+  .leg-info:hover{border-color:var(--brand);color:var(--brand);}
+  .popover.details{width:296px;}
+  .detail-row{display:flex;justify-content:space-between;gap:14px;padding:7px 9px;font-size:12px;}
+  .detail-row .dl{color:var(--ink-3);white-space:nowrap;}
+  .detail-row .dv{text-align:right;font-weight:500;}
+
   .oos-steps{display:flex;flex-direction:column;gap:7px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);}
   .oos-row{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--ink-3);}
 
@@ -723,7 +747,7 @@
         <span class="st-name">Más barato</span><span class="st-meta" id="meta-cheapest"></span>
       </button>
       <button class="sort-tab" id="sort-fastest" role="tab" data-sort="fastest" aria-selected="false">
-        <span class="st-name">Más rápido</span><span class="st-meta" id="meta-fastest"></span>
+        <span class="st-name">Más corto</span><span class="st-meta" id="meta-fastest"></span>
       </button>
     </div>
 
@@ -773,18 +797,16 @@
     </div>
   </section>
 
-  <!-- ============ FARE ============ -->
-  <section id="screen-fare" hidden>
+  <!-- ============ PAYMENT ============ -->
+  <section id="screen-payment" hidden>
     <button class="btn-back" id="btn-back">← Volver a resultados</button>
 
     <div class="stepper">
       <div class="step done"><span class="step-dot">✓</span><span class="step-name">Vuelos</span></div>
       <span class="step-rule"></span>
-      <div class="step active"><span class="step-dot">2</span><span class="step-name">Tarifa</span></div>
+      <div class="step skipped"><span class="step-dot">2</span><span class="step-name">Pasajeros — omitido en el prototipo</span></div>
       <span class="step-rule"></span>
-      <div class="step"><span class="step-dot">3</span><span class="step-name">Pasajeros</span></div>
-      <span class="step-rule"></span>
-      <div class="step"><span class="step-dot">4</span><span class="step-name">Pago</span></div>
+      <div class="step active"><span class="step-dot">3</span><span class="step-name">Pago</span></div>
     </div>
 
     <div class="fare-grid">
@@ -800,9 +822,22 @@
           </div>
         </div>
 
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-head"><h2>Método de pago</h2></div>
+          <div class="panel-body">
+            <div class="pay-stub" aria-hidden="true">
+              <div class="pay-row"><span class="pay-label">Titular</span><span class="pay-box"></span></div>
+              <div class="pay-row"><span class="pay-label">Número de tarjeta</span><span class="pay-box"></span></div>
+              <div class="pay-row half"><span class="pay-label">Caducidad</span><span class="pay-box"></span></div>
+              <div class="pay-row half"><span class="pay-label">CVV</span><span class="pay-box"></span></div>
+            </div>
+            <p class="pay-note">Marcadores de posición: este prototipo no captura ningún dato.</p>
+          </div>
+        </div>
+
         <div class="pm-note" id="note-fare" hidden>
           <span class="tag">PM</span>
-          <p><b>El cargo por gestión aparece por primera vez en este paso</b>, no en resultados. La microcopia de moneda de cobro en el resumen ya es la propuesta de diseño: dice en qué moneda se cobra realmente, aunque el viajero esté viendo otra en pantalla.</p>
+          <p><b>Aquí es donde la moneda de cobro realmente importa.</b> Los detalles del vuelo viven en la ⓘ de cada tramo, que no es lugar para un control de moneda: por eso los únicos puntos medibles del prototipo son el encabezado y resultados.</p>
         </div>
       </div>
 
@@ -810,13 +845,13 @@
         <div class="panel">
           <div class="panel-head">
             <h2>Resumen</h2>
-            <button class="wallet-trigger" id="wallet-fare" data-touchpoint="fare" aria-haspopup="true" style="padding:6px 9px;font-size:12px;">
+            <button class="wallet-trigger" id="wallet-payment" data-touchpoint="payment" aria-haspopup="true" style="padding:6px 9px;font-size:12px;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><rect x="2.5" y="5.5" width="19" height="13.5" rx="2.5"/><path d="M2.5 10h19"/><circle cx="17" cy="14.5" r="1.3" fill="currentColor" stroke="none"/></svg>
               Otra moneda
             </button>
           </div>
           <div class="panel-body">
-            <div class="fare-row"><span class="lbl">Tarifa base × 2</span><span class="val num" id="row-base"></span></div>
+            <div class="fare-row"><span class="lbl">Tarifa base × 2 pasajeros</span><span class="val num" id="row-base"></span></div>
             <div class="fare-row"><span class="lbl">Impuestos y tasas (TUA)</span><span class="val num" id="row-tax"></span></div>
             <div class="fare-row fee"><span class="lbl">Cargo por gestión</span><span class="val num" id="row-fee"></span></div>
             <div class="fare-row total">
@@ -824,16 +859,11 @@
               <span class="val num"><span id="row-total"></span><small id="row-total-sub"></small></span>
             </div>
 
-            <button class="btn-primary block" id="btn-cta" style="margin-top:16px;">Continuar</button>
+            <button class="btn-primary block" id="btn-cta" style="margin-top:16px;">Pagar</button>
 
             <div class="charge-copy">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.6v.6"/></svg>
               <span id="charge-copy-text"></span>
-            </div>
-
-            <div class="oos-steps">
-              <div class="oos-row"><span class="step-dot" style="width:17px;height:17px;font-size:9.5px;">3</span> Pasajeros — fuera de alcance</div>
-              <div class="oos-row"><span class="step-dot" style="width:17px;height:17px;font-size:9.5px;">4</span> Pago — fuera de alcance</div>
             </div>
           </div>
         </div>
@@ -911,7 +941,7 @@
   var CUR_NAME   = { MXN:'Peso mexicano', ARS:'Peso argentino', USD:'Dólar estadounidense', EUR:'Euro' };
   var ALL_CURRENCIES = ['MXN','ARS','USD','EUR'];
 
-  var TOUCHPOINT_LABEL = { header:'Encabezado', results:'Resultados', fare:'Tarifa' };
+  var TOUCHPOINT_LABEL = { header:'Encabezado', results:'Resultados', payment:'Pago' };
   var KIND_LABEL = { switch:'cambio real', estimate:'estimado' };
   var REASON_LABEL = {
     compare:'Comparando precios', card:'Tarjeta de otro país', curious:'Solo curiosidad',
@@ -938,15 +968,15 @@
       route:'MEX → CUN', routeLong:'Ciudad de México → Cancún',
       serviceFee:189,
       flights:[
-        {code:'Y4', airline:'Volaris', num:'632', dep:'06:05', arr:'08:20', mins:135, from:'MEX', to:'CUN', stops:0, tier:'Basic', price:3180, co2:118, seats:4, cabin:true, checked:false,
+        {code:'Y4', airline:'Volaris', num:'632', dep:'06:05', arr:'08:20', mins:135, from:'MEX', to:'CUN', stops:0, tier:'Basic', price:1590, co2:118, seats:4, cabin:true, checked:false,
           ret:{num:'633', dep:'09:10', arr:'11:35', mins:145, stops:0}},
-        {code:'VB', airline:'VivaAerobus', num:'205', dep:'09:40', arr:'11:55', mins:135, from:'MEX', to:'CUN', stops:0, tier:'Basic', price:2860, co2:112, cabin:true, checked:false,
+        {code:'VB', airline:'VivaAerobus', num:'205', dep:'09:40', arr:'11:55', mins:135, from:'MEX', to:'CUN', stops:0, tier:'Basic', price:1430, co2:112, cabin:true, checked:false,
           ret:{num:'206', dep:'12:30', arr:'14:50', mins:140, stops:0}},
-        {code:'AM', airline:'Aeroméxico', num:'480', dep:'13:15', arr:'15:35', mins:140, from:'MEX', to:'CUN', stops:0, tier:'Classic', price:5240, co2:131, cabin:true, checked:true,
+        {code:'AM', airline:'Aeroméxico', num:'480', dep:'13:15', arr:'15:35', mins:140, from:'MEX', to:'CUN', stops:0, tier:'Classic', price:2620, co2:131, cabin:true, checked:true,
           ret:{num:'481', dep:'16:40', arr:'19:05', mins:145, stops:0}},
-        {code:'Y4', airline:'Volaris', num:'210', dep:'18:50', arr:'21:10', mins:140, from:'MEX', to:'CUN', stops:0, tier:'Plus', price:4120, co2:120, cabin:true, checked:true,
+        {code:'Y4', airline:'Volaris', num:'210', dep:'18:50', arr:'21:10', mins:140, from:'MEX', to:'CUN', stops:0, tier:'Plus', price:2060, co2:120, cabin:true, checked:true,
           ret:{num:'211', dep:'21:55', arr:'00:20', mins:145, stops:0, plusDay:true}},
-        {code:'VB', airline:'VivaAerobus', num:'880', dep:'05:30', arr:'12:45', mins:435, from:'MEX', to:'CUN', stops:1, via:'MTY', tier:'Basic', price:2340, co2:186, cabin:true, checked:false,
+        {code:'VB', airline:'VivaAerobus', num:'880', dep:'05:30', arr:'12:45', mins:435, from:'MEX', to:'CUN', stops:1, via:'MTY', tier:'Basic', price:1170, co2:186, cabin:true, checked:false,
           ret:{num:'881', dep:'14:20', arr:'21:15', mins:415, stops:1, via:'MTY'}}
       ]
     },
@@ -957,15 +987,15 @@
       route:'EZE → BRC', routeLong:'Buenos Aires → Bariloche',
       serviceFee:12,
       flights:[
-        {code:'AR', airline:'Aerolíneas Argentinas', num:'1804', dep:'07:10', arr:'09:35', mins:145, from:'EZE', to:'BRC', stops:0, tier:'Promo', price:214, co2:148, cabin:true, checked:false,
+        {code:'AR', airline:'Aerolíneas Argentinas', num:'1804', dep:'07:10', arr:'09:35', mins:145, from:'EZE', to:'BRC', stops:0, tier:'Promo', price:107, co2:148, cabin:true, checked:false,
           ret:{num:'1805', dep:'10:25', arr:'12:50', mins:145, stops:0}},
-        {code:'JA', airline:'JetSmart', num:'601', dep:'10:20', arr:'12:50', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Zero', price:149, co2:141, cabin:true, checked:false,
+        {code:'JA', airline:'JetSmart', num:'601', dep:'10:20', arr:'12:50', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Zero', price:75, co2:141, cabin:true, checked:false,
           ret:{num:'602', dep:'13:40', arr:'16:05', mins:145, stops:0}},
-        {code:'FO', airline:'Flybondi', num:'2310', dep:'14:05', arr:'16:40', mins:155, from:'EZE', to:'BRC', stops:0, tier:'Basic', price:138, co2:144, seats:3, cabin:true, checked:false,
+        {code:'FO', airline:'Flybondi', num:'2310', dep:'14:05', arr:'16:40', mins:155, from:'EZE', to:'BRC', stops:0, tier:'Basic', price:69, co2:144, seats:3, cabin:true, checked:false,
           ret:{num:'2311', dep:'17:30', arr:'20:00', mins:150, stops:0}},
-        {code:'AR', airline:'Aerolíneas Argentinas', num:'1830', dep:'19:45', arr:'22:15', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Flex', price:266, co2:147, cabin:true, checked:true,
+        {code:'AR', airline:'Aerolíneas Argentinas', num:'1830', dep:'19:45', arr:'22:15', mins:150, from:'EZE', to:'BRC', stops:0, tier:'Flex', price:133, co2:147, cabin:true, checked:true,
           ret:{num:'1831', dep:'23:05', arr:'01:30', mins:145, stops:0, plusDay:true}},
-        {code:'JA', airline:'JetSmart', num:'615', dep:'05:50', arr:'13:20', mins:450, from:'EZE', to:'BRC', stops:1, via:'AEP', tier:'Zero', price:121, co2:205, cabin:true, checked:false,
+        {code:'JA', airline:'JetSmart', num:'615', dep:'05:50', arr:'13:20', mins:450, from:'EZE', to:'BRC', stops:1, via:'AEP', tier:'Zero', price:61, co2:205, cabin:true, checked:false,
           ret:{num:'616', dep:'15:10', arr:'22:25', mins:435, stops:1, via:'AEP'}}
       ]
     }
@@ -1019,7 +1049,7 @@
   function totalMins(f){ return f.mins + (f.ret ? f.ret.mins : 0); }
 
   // one leg of the itinerary: times, duration, stop marker
-  function legRow(label, date, dep, from, arr, to, mins, stops, via, plusDay){
+  function legRow(label, date, dep, from, arr, to, mins, stops, via, plusDay, legIdx){
     return '<div class="leg-row">' +
       '<span class="leg-label">' + label + '<span class="leg-date">' + date + '</span></span>' +
       '<div class="fc-times">' +
@@ -1031,12 +1061,13 @@
         '</div>' +
         '<div class="fc-time"><span class="t">' + arr + (plusDay ? '<sup>+1</sup>' : '') + '</span><span class="a">' + to + '</span></div>' +
       '</div>' +
+      (legIdx == null ? '' : '<button class="leg-info" type="button" data-leg="' + legIdx + '" aria-label="Detalles del vuelo">i</button>') +
     '</div>';
   }
-  function itinerary(f){
+  function itinerary(f, withInfo){
     return '<div class="legs">' +
-      legRow('Ida', '18 sep', f.dep, f.from, f.arr, f.to, f.mins, f.stops, f.via, false) +
-      (f.ret ? legRow('Vuelta', '25 sep', f.ret.dep, f.to, f.ret.arr, f.from, f.ret.mins, f.ret.stops, f.ret.via, f.ret.plusDay) : '') +
+      legRow('Ida', '18 sep', f.dep, f.from, f.arr, f.to, f.mins, f.stops, f.via, false, withInfo ? 0 : null) +
+      (f.ret ? legRow('Vuelta', '25 sep', f.ret.dep, f.to, f.ret.arr, f.from, f.ret.mins, f.ret.stops, f.ret.via, f.ret.plusDay, withInfo ? 1 : null) : '') +
     '</div>';
   }
 
@@ -1158,7 +1189,7 @@
     var fastest  = extreme(list, totalMins);
 
     document.getElementById('results-count').innerHTML =
-      '<b>' + list.length + '</b> de ' + m.flights.length + ' vuelos · ida y vuelta · precios para 2 pasajeros';
+      '<b>' + list.length + '</b> de ' + m.flights.length + ' vuelos · ida y vuelta · precio por pasajero';
 
     var cmp = document.getElementById('compare-trigger');
     var cmpLabel = document.getElementById('compare-label');
@@ -1195,7 +1226,7 @@
 
       var badges = '';
       if(cheapest && f === cheapest) badges += '<span class="badge cheap">Más barato</span>';
-      if(fastest && f === fastest && f !== cheapest) badges += '<span class="badge fast">Más rápido</span>';
+      if(fastest && f === fastest && f !== cheapest) badges += '<span class="badge fast">Más corto</span>';
       if(f.seats) badges += '<span class="badge seats">Quedan ' + f.seats + ' asientos</span>';
 
       var estimate = state.estimateCurrency
@@ -1211,7 +1242,7 @@
                 '<span class="tier-inline"> · ' + f.tier + '</span></span></span>' +
               (badges ? '<span class="badge-strip">' + badges + '</span>' : '') +
             '</div>' +
-            itinerary(f) +
+            itinerary(f, true) +
             '<div class="fc-meta">' +
               '<span class="item ' + (f.cabin ? 'on' : 'off') + '">' + bagIcon() + 'Equipaje de mano</span>' +
               '<span class="item ' + (f.checked ? 'on' : 'off') + '">' + bagIcon() + 'Equipaje facturado</span>' +
@@ -1223,16 +1254,25 @@
             '<div class="price-block">' +
               '<span class="price">' + priceStr(f.price, state.market, state.currency) + '</span>' +
               estimate +
-              '<span class="price-sub">Total 2 pasajeros</span>' +
+              '<span class="price-sub">por pasajero</span>' +
             '</div>' +
-            '<button class="btn-primary">Ver oferta</button>' +
+            '<button class="btn-primary">Seleccionar</button>' +
           '</div>' +
         '</div>';
 
+      card.querySelectorAll('.leg-info').forEach(function(btn){
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          var key = 'details:' + f.code + f.num + ':' + btn.getAttribute('data-leg');
+          if(state.popoverKey === key){ closePopover(); return; }
+          openLegDetails(f, Number(btn.getAttribute('data-leg')), btn);
+          state.popoverKey = key;
+        });
+      });
       card.querySelector('.btn-primary').addEventListener('click', function(){
         cancelPendingIntent();
         state.selectedFlight = f;
-        state.screen = 'fare';
+        state.screen = 'payment';
         window.scrollTo(0,0);
         render();
       });
@@ -1240,7 +1280,7 @@
     });
   }
 
-  function renderFare(){
+  function renderPayment(){
     var m = MARKETS[state.market];
     var f = state.selectedFlight || m.flights[0];
 
@@ -1251,7 +1291,7 @@
         '<span><span class="fc-airline-name">' + f.airline + '</span><br>' +
         '<span class="fc-airline-sub">' + f.code + ' ' + f.num + ' · ' + f.code + ' ' + (f.ret ? f.ret.num : '') + ' · ' + durStr(totalMins(f)) + ' en vuelo</span></span>' +
       '</div>' +
-      '<div style="width:100%">' + itinerary(f) + '</div>';
+      '<div style="width:100%">' + itinerary(f, false) + '</div>';
 
     var yes = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>';
     var no  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
@@ -1260,16 +1300,18 @@
       '<div class="include-row ' + (f.checked ? 'yes' : 'no') + '">' + (f.checked ? yes : no) + 'Equipaje facturado (23 kg)</div>' +
       '<div class="include-row no">' + no + 'Cambios de fecha sin costo</div>';
 
-    var base = Math.round(f.price * 0.74);
-    var tax  = f.price - base;
+    var PAX = 2;
+    var basePerPax = Math.round(f.price * 0.74);
+    var base = basePerPax * PAX;
+    var tax  = (f.price * PAX) - base;
     var fee  = m.serviceFee;
-    var total = f.price + fee;
+    var total = (f.price * PAX) + fee;
 
     document.getElementById('row-base').textContent = priceStr(base, state.market, state.currency);
     document.getElementById('row-tax').textContent  = priceStr(tax, state.market, state.currency);
     document.getElementById('row-fee').textContent  = priceStr(fee, state.market, state.currency);
     document.getElementById('row-total').textContent = priceStr(total, state.market, state.currency);
-    document.getElementById('row-total-sub').textContent = 'Impuestos y cargos incluidos';
+    document.getElementById('row-total-sub').textContent = '2 pasajeros · impuestos y cargos incluidos';
 
     var charge = m.chargeCurrency;
     var copyEl = document.getElementById('charge-copy-text');
@@ -1291,9 +1333,9 @@
   function render(){
     renderChrome();
     document.getElementById('screen-results').hidden = state.screen !== 'results';
-    document.getElementById('screen-fare').hidden = state.screen !== 'fare';
+    document.getElementById('screen-payment').hidden = state.screen !== 'payment';
     if(state.screen === 'results'){ renderFilters(); renderSortTabs(); renderResults(); }
-    else renderFare();
+    else renderPayment();
   }
 
   /* ---------- instrumentation ---------- */
@@ -1326,7 +1368,7 @@
   function renderInstrumentation(){
     document.getElementById('drawer-count').textContent = state.events.length;
 
-    var byTouchpoint = {header:0, results:0, fare:0};
+    var byTouchpoint = {header:0, results:0, payment:0};
     var byReason = {}, byEstimate = {};
     state.events.forEach(function(ev){
       byTouchpoint[ev.touchpoint] = (byTouchpoint[ev.touchpoint] || 0) + 1;
@@ -1380,6 +1422,7 @@
   function openPopover(anchor, touchpoint, build){
     var pop = document.getElementById('popover');
     state.popoverTouchpoint = touchpoint;
+    pop.classList.remove('details');
     pop.innerHTML = '';
     build(pop);
     pop.hidden = false;
@@ -1392,13 +1435,14 @@
   function closePopover(){
     document.getElementById('popover').hidden = true;
     state.popoverTouchpoint = null;
+    state.popoverKey = null;
     document.removeEventListener('click', onDocClick, true);
     window.removeEventListener('scroll', closePopover, true);
   }
   function onDocClick(e){
     var pop = document.getElementById('popover');
     if(pop.contains(e.target)) return;
-    if(e.target.closest && (e.target.closest('.wallet-trigger') || e.target.closest('.compare-trigger'))) return;
+    if(e.target.closest && (e.target.closest('.wallet-trigger') || e.target.closest('.compare-trigger') || e.target.closest('.leg-info'))) return;
     closePopover();
   }
   function curOption(code, opts){
@@ -1449,6 +1493,35 @@
           checked:state.estimateCurrency === c,
           onSelect:function(){ selectEstimate(c); }
         }));
+      });
+    });
+  }
+
+  // details live behind the per-leg info affordance, matching the live funnel
+  function openLegDetails(f, legIdx, anchor){
+    var leg = legIdx === 0
+      ? {num:f.num, dep:f.dep, arr:f.arr, from:f.from, to:f.to, mins:f.mins, stops:f.stops, via:f.via, label:'Ida · 18 sep'}
+      : {num:f.ret.num, dep:f.ret.dep, arr:f.ret.arr, from:f.to, to:f.from, mins:f.ret.mins, stops:f.ret.stops, via:f.ret.via, label:'Vuelta · 25 sep'};
+
+    openPopover(anchor, 'details', function(pop){
+      pop.classList.add('details');
+      var head = document.createElement('div');
+      head.className = 'popover-head';
+      head.textContent = leg.label;
+      pop.appendChild(head);
+      [
+        ['Aerolínea', f.airline + ' · ' + f.code + ' ' + leg.num],
+        ['Salida', leg.dep + ' · ' + leg.from],
+        ['Llegada', leg.arr + ' · ' + leg.to],
+        ['Duración', durStr(leg.mins) + (leg.stops ? ' · 1 escala en ' + leg.via : ' · directo')],
+        ['Equipaje', (f.cabin ? '1 de mano' : 'sin equipaje de mano') + (f.checked ? ' + 1 facturado' : '')],
+        ['Emisiones', f.co2 + ' kg CO₂ por pasajero'],
+        ['Tarifa', f.tier]
+      ].forEach(function(r){
+        var row = document.createElement('div');
+        row.className = 'detail-row';
+        row.innerHTML = '<span class="dl">' + r[0] + '</span><span class="dv">' + r[1] + '</span>';
+        pop.appendChild(row);
       });
     });
   }
@@ -1536,7 +1609,7 @@
   }
 
   /* ---------- wiring ---------- */
-  ['wallet-header','wallet-fare'].forEach(function(id){
+  ['wallet-header','wallet-payment'].forEach(function(id){
     document.getElementById(id).addEventListener('click', function(e){
       e.stopPropagation();
       var tp = this.getAttribute('data-touchpoint');
@@ -1606,7 +1679,7 @@
     state.screen = 'results'; window.scrollTo(0,0); render();
   });
   document.getElementById('btn-cta').addEventListener('click', function(){
-    showToast('Fuera de alcance del prototipo — el paso 3 (pasajeros) todavía no está especificado.');
+    showToast('Fuera de alcance del prototipo — no se procesa ningún pago.');
   });
   // a stored currency choice survives reloads, which leaves a demo in a
   // non-default state on the next visit — this returns it to a first visit
